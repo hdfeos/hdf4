@@ -22,7 +22,7 @@ jobs:
           sudo make install
       - name: Install HDF-EOS2
         run: |
-          wget -O hdfeos2.tar.gz "https://git.earthdata.nasa.gov/projects/DAS/repos/hdfeos/raw/hdf-eos2-3.0-src.tar.gz?at=3128a738021501c821549955f6c78348e5f33850"
+          wget -O hdfeos.tar.gz "https://git.earthdata.nasa.gov/projects/DAS/repos/hdfeos/raw/hdf-eos2-3.0-src.tar.gz?at=3128a738021501c821549955f6c78348e5f33850"
           tar zxvf hdfeos.tar.gz
           cd hdf-eos2-3.0
           ./configure --prefix=/usr/local/ --enable-install-include --with-hdf4=/usr/local; \        
