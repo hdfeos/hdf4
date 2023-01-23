@@ -27,4 +27,5 @@ jobs:
           cd hdf-eos2-3.0
           ./configure --prefix=/usr/local/ --enable-install-include --with-hdf4=/usr/local
           make
+          make check
           sudo make install
