@@ -3,25 +3,28 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: Build hdfeos
     steps:
-    - name: Get Sources    
-      - uses: actions/checkout@v3
-    - name: Install Autotools Dependencies (Linux)
-      run: |
-        sudo apt update
-        sudo apt install automake autoconf libtool libtool-bin
-    - name: Install HDF4
-      run: |
-        autoreconf -fvi
-        ./configure --enable-shared --disable-fortran --disable-netcdf
-        cat ./config.log
-        make
-        make check
-        sudo make install
-    - name: Install HDF-EOS2
-      run: |
-        wget -O hdfeos2.tar.gz "https://git.earthdata.nasa.gov/projects/DAS/repos/hdfeos/raw/hdf-eos2-3.0-src.tar.gz?at=3128a738021501c821549955f6c78348e5f33850"
-        tar zxvf hdfeos.tar.gz
-        ./configure --prefix=/usr/local/ --enable-install-include --with-hdf4=/usr/local; \        
-        make
-        sudo make install
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get Sources
+      - name: Install Autotools Dependencies (Linux)
+        run: |
+          sudo apt update
+          sudo apt install automake autoconf libtool libtool-bin
+      - name: Install HDF4
+        run: |
+          autoreconf -fvi
+          ./configure --enable-shared --disable-fortran --disable-netcdf
+          cat ./config.log
+          make
+          make check
+          sudo make install
+      - name: Install HDF-EOS2
+        run: |
+          wget -O hdfeos2.tar.gz "https://git.earthdata.nasa.gov/projects/DAS/repos/hdfeos/raw/hdf-eos2-3.0-src.tar.gz?at=3128a738021501c821549955f6c78348e5f33850"
+          tar zxvf hdfeos.tar.gz
+          cd hdf-eos2-3.0
+          ./configure --prefix=/usr/local/ --enable-install-include --with-hdf4=/usr/local; \        
+          make
+          sudo make install
