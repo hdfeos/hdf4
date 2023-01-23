@@ -15,7 +15,7 @@ jobs:
       - name: Install HDF4
         run: |
           autoreconf -fvi
-          ./configure --enable-shared --disable-fortran --disable-netcdf
+          ./configure --prefix=/usr/local --enable-shared --disable-fortran --disable-netcdf
           cat ./config.log
           make
           make check
