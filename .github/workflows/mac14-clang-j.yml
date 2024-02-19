@@ -1,0 +1,33 @@
+name: mac14 clang17 j
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    name: "mac14"
+    runs-on: macos-14
+    steps:
+    - name: Install Dependencies (macOS)
+      run: brew install llvm ninja openmpi libaec jpeg
+
+    - name: Get Sources
+      uses: actions/checkout@v4.1.1
+
+    - name: Configure
+      run: |
+        export CC=$(brew --prefix llvm)/bin/clang
+        echo $CC
+        mkdir build
+        cd build
+        cmake -G Ninja \
+        -D BUILD_SHARED_LIBS=ON \
+        -D CTEST_DROP_SITE_INIT:STRING="my.cdash.org" \
+        -D HDF4_BUILD_JAVA=ON \
+        -D SITE:STRING=j.clang17.mac14 \
+        ..
+        ctest -T Build --output-on-error -j
+        ctest -T Test --output-on-error -j
+        ctest -T Submit
+      shell: bash
