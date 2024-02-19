@@ -78,12 +78,9 @@ set (HDF4_HDF_SRC_CHDRS
     ${HDF4_HDF_SRC_SOURCE_DIR}/dfan.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/dfgr.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/dfrig.h
-    ${HDF4_HDF_SRC_SOURCE_DIR}/dfi.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/dfsd.h
-    ${HDF4_HDF_SRC_SOURCE_DIR}/dfstubs.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/dfufp2i.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/dynarray.h
-    ${HDF4_HDF_SRC_SOURCE_DIR}/glist.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/H4api_adpt.h
     #${HDF4_BINARY_DIR}/h4config.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/hbitio.h
@@ -103,19 +100,25 @@ set (HDF4_HDF_SRC_CHDRS
     ${HDF4_HDF_SRC_SOURCE_DIR}/hqueue.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/htags.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/linklist.h
-    ${HDF4_HDF_SRC_SOURCE_DIR}/mcache.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/mfan.h
+    ${HDF4_HDF_SRC_SOURCE_DIR}/mfani.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/mfgr.h
+    ${HDF4_HDF_SRC_SOURCE_DIR}/mfgri.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/mstdio.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/tbbt.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/vg.h
+)
+
+set (HDF4_PRIVATE_HDF_SRC_CHDRS
+    ${HDF4_HDF_SRC_SOURCE_DIR}/glist.h
+    ${HDF4_HDF_SRC_SOURCE_DIR}/mcache.h
     ${HDF4_HDF_SRC_SOURCE_DIR}/vgint.h
 )
 
 if (NOT ONLY_SHARED_LIBS)
-  add_library (${HDF4_SRC_LIB_TARGET} STATIC ${HDF4_HDF_SRC_CSRCS} ${HDF4_HDF_SRC_CHDRS} ${HDF4_BINARY_DIR}/h4config.h)
+  add_library (${HDF4_SRC_LIB_TARGET} STATIC ${HDF4_HDF_SRC_CSRCS} ${HDF4_HDF_SRC_CHDRS} ${HDF4_PRIVATE_HDF_SRC_CHDRS} ${HDF4_BINARY_DIR}/h4config.h)
   target_include_directories(${HDF4_SRC_LIB_TARGET}
-      PRIVATE "${HDF4_HDF_BINARY_DIR};${HDF4_HDFSOURCE_DIR}"
+      PRIVATE "${HDF4_HDF_BINARY_DIR};${HDF4_HDFSOURCE_DIR};${HDF4_BINARY_DIR};${HDF4_COMP_INCLUDE_DIRECTORIES}"
       INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>;$<BUILD_INTERFACE:${HDF4_HDF_BINARY_DIR}>"
   )
   target_compile_options(${HDF4_SRC_LIB_TARGET} PRIVATE "${HDF4_CMAKE_C_FLAGS}")
@@ -133,12 +136,18 @@ if (NOT ONLY_SHARED_LIBS)
       INTERFACE_INCLUDE_DIRECTORIES "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>"
   )
   set (install_targets ${HDF4_SRC_LIB_TARGET})
+#
+#  add_custom_command(TARGET ${HDF4_SRC_LIB_TARGET}
+#       COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE_NAME:HDF4_SRC_LIB_TARGET> $<TARGET_FILE_NAME:HDF4_SRC_LIB_SYM_TARGET>
+#       DEPENDS $<TARGET_FILE_NAME:HDF4_SRC_LIB_TARGET>
+#  )
+#  set (install_targets ${install_targets} ${HDF4_SRC_LIB_SYM_TARGET})
 endif ()
 
 if (BUILD_SHARED_LIBS)
-  add_library (${HDF4_SRC_LIBSH_TARGET} SHARED ${HDF4_HDF_SRC_CSRCS} ${HDF4_HDF_SRC_CHDRS} ${HDF4_BINARY_DIR}/h4config.h)
+  add_library (${HDF4_SRC_LIBSH_TARGET} SHARED ${HDF4_HDF_SRC_CSRCS} ${HDF4_HDF_SRC_CHDRS} ${HDF4_PRIVATE_HDF_SRC_CHDRS} ${HDF4_BINARY_DIR}/h4config.h)
   target_include_directories(${HDF4_SRC_LIBSH_TARGET}
-      PRIVATE "${HDF4_HDF_BINARY_DIR};${HDF4_HDFSOURCE_DIR}"
+      PRIVATE "${HDF4_HDF_BINARY_DIR};${HDF4_HDFSOURCE_DIR};${HDF4_BINARY_DIR};${HDF4_COMP_INCLUDE_DIRECTORIES}"
       INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>;$<BUILD_INTERFACE:${HDF4_HDF_BINARY_DIR}>"
   )
   target_compile_options(${HDF4_SRC_LIBSH_TARGET} PRIVATE "${HDF4_CMAKE_C_FLAGS}")
@@ -158,6 +167,12 @@ if (BUILD_SHARED_LIBS)
       INTERFACE_COMPILE_DEFINITIONS H4_BUILT_AS_DYNAMIC_LIB=1
   )
   set (install_targets ${install_targets} ${HDF4_SRC_LIBSH_TARGET})
+#
+#  add_custom_command(TARGET ${HDF4_SRC_LIBSH_TARGET}
+#       COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE_NAME:HDF4_SRC_LIBSH_TARGET> $<TARGET_FILE_NAME:HDF4_SRC_LIBSH_SYM_TARGET>
+#       DEPENDS $<TARGET_FILE_NAME:HDF4_SRC_LIBSH_TARGET>
+#  )
+#  set (install_targets ${install_targets} ${HDF4_SRC_LIBSH_SYM_TARGET})
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -194,4 +209,24 @@ if (HDF4_EXPORTED_TARGETS)
       FRAMEWORK DESTINATION ${HDF4_INSTALL_FWRK_DIR} COMPONENT libraries
       INCLUDES DESTINATION include
   )
+endif ()
+
+#-----------------------------------------------------------------------------
+# Option to build documentation
+#-----------------------------------------------------------------------------
+if (DOXYGEN_FOUND)
+  # This custom target and doxygen/configure work together
+  # Replace variables inside @@ with the current values
+  add_custom_target (hdf4lib_doc ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${HDF4_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${HDF4_HDFSOURCE_DIR}
+        COMMENT "Generating HDF4 library Source API documentation with Doxygen"
+        VERBATIM )
+
+  if (NOT TARGET doxygen)
+    add_custom_target (doxygen)
+  endif ()
+
+  add_dependencies (doxygen hdf4lib_doc)
+
 endif ()

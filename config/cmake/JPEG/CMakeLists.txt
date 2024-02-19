@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.2.2)
+cmake_minimum_required (VERSION 3.12)
 PROJECT (JPEG C)
 
 #-----------------------------------------------------------------------------
@@ -6,7 +6,6 @@ PROJECT (JPEG C)
 #-----------------------------------------------------------------------------
 
 set (JPEG_PACKAGE_EXT ${HDF_PACKAGE_EXT})
-set (CMAKE_ANSI_CFLAGS ${jpeg_pic})
 set (HDF_USE_GNU_DIRS ${HDF4_USE_GNU_DIRS})
 set (CMAKE_OSX_ARCHITECTURES ${CMAKE_OSX_ARCHITECTURES})
 set (CMAKE_TOOLCHAIN_FILE ${CMAKE_TOOLCHAIN_FILE})
@@ -17,8 +16,8 @@ endif ()
 if (WINDOWS)
   set (HAVE_STDDEF_H 1)
   set (HAVE_SYS_TYPES_H 1)
-  set (HAVE_PROTOTYPES 1) # jpeg
 endif ()
+set (HAVE_PROTOTYPES 1) # jpeg
 CHECK_INCLUDE_FILE_CONCAT ("sys/types.h"     HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILE_CONCAT ("stddef.h"        HAVE_STDDEF_H)
 
@@ -135,21 +134,14 @@ if (MSVC)
   set (CMAKE_MFC_FLAG 0)
 endif ()
 
-set (MAKE_SYSTEM)
-if (CMAKE_BUILD_TOOL MATCHES "make")
-  set (MAKE_SYSTEM 1)
-endif ()
-
-set (CFG_INIT "/${CMAKE_CFG_INTDIR}")
-if (MAKE_SYSTEM)
-  set (CFG_INIT "")
-endif ()
-
 #-----------------------------------------------------------------------------
 # Compiler specific flags : Shouldn't there be compiler tests for these
 #-----------------------------------------------------------------------------
 if (CMAKE_COMPILER_IS_GNUCC)
-  set (CMAKE_C_FLAGS "${CMAKE_ANSI_CFLAGS} ${CMAKE_C_FLAGS} -std=c99 -fomit-frame-pointer -finline-functions -fno-common")
+  set (CMAKE_C_FLAGS "${CMAKE_ANSI_CFLAGS} ${CMAKE_C_FLAGS} -Wno-strict-prototypes")
+endif ()
+if (CMAKE_C_COMPILER_ID MATCHES "IntelLLVM" OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang")
+   set (CMAKE_C_FLAGS "${CMAKE_ANSI_CFLAGS} ${CMAKE_C_FLAGS} -Wno-deprecated-non-prototype -Wno-strict-prototypes")
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -170,7 +162,9 @@ endif ()
 #-----------------------------------------------------------------------------
 # All libs/tests/examples need the main include directories
 #-----------------------------------------------------------------------------
-INCLUDE_DIRECTORIES (${JPEG_BINARY_DIR} ${JPEG_SOURCE_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES 
+    "${JPEG_BINARY_DIR};${JPEG_SOURCE_DIR};${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+)
 
 set (JPEG_SRCS
     ${JPEG_SRC_DIR}/jaricom.c
@@ -241,7 +235,7 @@ TARGET_C_PROPERTIES (${JPEG_LIB_TARGET} STATIC)
 target_link_libraries (${JPEG_LIB_TARGET} PRIVATE ${LINK_LIBS})
 H4_SET_LIB_OPTIONS (${JPEG_LIB_TARGET} ${JPEG_LIB_NAME} STATIC)
 set_target_properties(${JPEG_LIB_TARGET} PROPERTIES
-    PUBLIC_HEADER "${JPEG_PUBLIC_HEADERS}"
+    PUBLIC_HEADER ""
     LINKER_LANGUAGE C
     INTERFACE_INCLUDE_DIRECTORIES "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>"
 )
@@ -284,17 +278,6 @@ if (WIN32)
     file(TO_CMAKE_PATH "$ENV{WIX}" CPACK_WIX_ROOT)
   endif ()
   find_program (WIX_EXECUTABLE candle  PATHS "${CPACK_WIX_ROOT}/bin")
-endif ()
-
-#-----------------------------------------------------------------------------
-# Add file(s) to CMake Install
-#-----------------------------------------------------------------------------
-if (NOT JPEG_INSTALL_NO_DEVELOPMENT)
-  install (
-      FILES ${PROJECT_BINARY_DIR}/jconfig.h
-      DESTINATION ${JPEG_INSTALL_INCLUDE_DIR}
-      COMPONENT headers
-  )
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -386,20 +369,6 @@ if (NOT JPEG_EXTERNALLY_CONFIGURED)
 endif ()
 
 #-----------------------------------------------------------------------------
-# Add Document File(s) to CMake Install
-#-----------------------------------------------------------------------------
-if (NOT JPEG_EXTERNALLY_CONFIGURED)
-  install (
-      FILES
-          ${JPEG_SOURCE_DIR}/README
-          ${JPEG_SOURCE_DIR}/libjpeg.txt
-          ${JPEG_SOURCE_DIR}/install.txt
-      DESTINATION ${JPEG_INSTALL_DATA_DIR}
-      COMPONENT documents
-  )
-endif ()
-
-#-----------------------------------------------------------------------------
 # Check for Installation Utilities
 #-----------------------------------------------------------------------------
 if (WIN32)
@@ -412,11 +381,9 @@ if (WIN32)
 endif ()
 
 #-----------------------------------------------------------------------------
-# Configure the README file for the windows binary package
+# Configure the README file for the binary package
 #-----------------------------------------------------------------------------
-if (WIN32)
-  configure_file (${JPEG_SOURCE_DIR}/README ${JPEG_BINARY_DIR}/README @ONLY)
-endif ()
+configure_file (${JPEG_SOURCE_DIR}/README ${JPEG_BINARY_DIR}/JPEG_README @ONLY)
 
 #-----------------------------------------------------------------------------
 # Set the cpack variables
@@ -424,17 +391,17 @@ endif ()
 if (NOT JPEG_EXTERNALLY_CONFIGURED)
   set (CPACK_PACKAGE_VENDOR "HDF_Group")
   set (CPACK_PACKAGE_NAME "${JPEG_PACKAGE_NAME}")
-  if (CDASH_LOCAL)
-    set (CPACK_PACKAGE_VERSION "${JPEG_PACKAGE_VERSION}")
-  else ()
+  if (NOT WIN32 OR JPEG_VERS_SUBRELEASE MATCHES "^[0-9]+$")
     set (CPACK_PACKAGE_VERSION "${JPEG_PACKAGE_VERSION_STRING}")
+  else ()
+    set (CPACK_PACKAGE_VERSION "${JPEG_PACKAGE_VERSION}")
   endif ()
   set (CPACK_PACKAGE_VERSION_MAJOR "${JPEG_PACKAGE_VERSION_MAJOR}")
   set (CPACK_PACKAGE_VERSION_MINOR "${JPEG_PACKAGE_VERSION_MINOR}")
   set (CPACK_PACKAGE_VERSION_PATCH "")
-  set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-  set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-  set (CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README")
+  set (CPACK_RESOURCE_FILE_LICENSE "${JPEG_BINARY_DIR}/JPEG_README")
+  set (CPACK_PACKAGE_DESCRIPTION_FILE "${JPEG_BINARY_DIR}/JPEG_README")
+  set (CPACK_RESOURCE_FILE_README "${JPEG_BINARY_DIR}/JPEG_README")
   set (CPACK_PACKAGE_RELOCATABLE TRUE)
   set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "jpeg9e Installation")
   set (CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
@@ -468,7 +435,7 @@ if (NOT JPEG_EXTERNALLY_CONFIGURED)
     endif ()
 #WiX variables
     set (CPACK_WIX_UNINSTALL "1")
-    set (CPACK_RESOURCE_FILE_LICENSE "${JPEG_BINARY_DIR}/README")
+    set (CPACK_RESOURCE_FILE_LICENSE "${JPEG_BINARY_DIR}/JPEG_README")
   elseif (APPLE)
     list (APPEND CPACK_GENERATOR "STGZ")
     list (APPEND CPACK_GENERATOR "DragNDrop")
@@ -520,7 +487,6 @@ if (NOT JPEG_EXTERNALLY_CONFIGURED)
   include (InstallRequiredSystemLibraries)
 
   set (CPACK_INSTALL_CMAKE_PROJECTS "${JPEG_BINARY_DIR};JPEG;libraries;/")
-  set (CPACK_INSTALL_CMAKE_PROJECTS "${JPEG_BINARY_DIR};JPEG;headers;/")
   set (CPACK_INSTALL_CMAKE_PROJECTS "${JPEG_BINARY_DIR};JPEG;configinstall;/")
 
   set (CPACK_ALL_INSTALL_TYPES Full Developer User)
@@ -532,32 +498,11 @@ if (NOT JPEG_EXTERNALLY_CONFIGURED)
 
   cpack_add_component_group(Runtime)
 
-  cpack_add_component_group(Documents
-      EXPANDED
-      DESCRIPTION "Release notes for jpeg9d"
-  )
-
-  cpack_add_component_group(Development
-      EXPANDED
-      DESCRIPTION "All of the tools you'll need to develop applications"
-  )
-
   cpack_add_component (libraries
       DISPLAY_NAME "JPEG Libraries"
       REQUIRED
       GROUP Runtime
       INSTALL_TYPES Full Developer User
-  )
-  cpack_add_component (headers
-      DISPLAY_NAME "JPEG Headers"
-      DEPENDS libraries
-      GROUP Development
-      INSTALL_TYPES Full Developer
-  )
-  cpack_add_component (documents
-      DISPLAY_NAME "JPEG Documents"
-      GROUP Documents
-      INSTALL_TYPES Full Developer
   )
   cpack_add_component (configinstall
       DISPLAY_NAME "JPEG CMake files"

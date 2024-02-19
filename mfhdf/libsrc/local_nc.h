@@ -17,47 +17,18 @@
 #ifndef MFH4_LOCAL_NC_H
 #define MFH4_LOCAL_NC_H
 
-#include "H4api_adpt.h"
+#include "hdfi.h"
 
 /*
  *    netcdf library 'private' data structures, objects and interfaces
  */
 
-#include <stddef.h> /* size_t */
-#include <stdio.h>  /* FILENAME_MAX */
-
 #ifndef FILENAME_MAX
 #define FILENAME_MAX 255
 #endif
 
-/* Do we have system XDR files */
-#ifndef H4_NO_SYS_XDR_INC
-
-#ifdef __CYGWIN__
-#ifndef __u_char_defined
-typedef unsigned char u_char;
-#define __u_char_defined
-#endif
-#ifndef __u_short_defined
-typedef unsigned short u_short;
-#define __u_short_defined
-#endif
-#ifndef __u_int_defined
-typedef unsigned int u_int;
-#define __u_int_defined
-#endif
-#ifndef __u_long_defined
-typedef unsigned long u_long;
-#define __u_long_defined
-#endif
-#endif /* __CYGWIN__ */
-
-#include <rpc/types.h>
-#include <rpc/xdr.h>
-#else              /* H4_NO_SYS_XDR_INC */
-#include "types.h" /* <types.h */
-#include "xdr.h"   /* <xdr.h> */
-#endif             /* H4_NO_SYS_XDR_INC */
+/* HDF4's stripped-down XDR implementation */
+#include "h4_xdr.h"
 
 #ifdef H4_HAVE_NETCDF
 #include "netcdf.h" /* needed for defs of nc_type, ncvoid, ... */
@@ -78,11 +49,9 @@ typedef unsigned long u_long;
 #define Void char
 
 /*
-** Include HDF stuff
-*/
-#ifdef HDF
+ * Include HDF stuff
+ */
 
-#include "hdf.h"
 #include "vg.h"
 #include "hfile.h"
 #include "mfhdfi.h"
@@ -99,14 +68,11 @@ typedef unsigned long u_long;
 #define MAX_BLOCK_SIZE   65536 /* maximum size of block in linked blocks */
 #define BLOCK_COUNT      128   /* size of linked block pointer objects  */
 
-#endif /* HDF */
-
 /* from cdflib.h CDF 2.3 */
 #ifndef MAX_VXR_ENTRIES
 #define MAX_VXR_ENTRIES 10
 #endif /* MAX_VXR_ENTRIES */
 
-#ifdef HDF
 /* VIX record for CDF variable data storage */
 typedef struct vix_t_def {
     int32             nEntries;                  /* number of entries in this vix */
@@ -116,7 +82,6 @@ typedef struct vix_t_def {
     int32             offset[MAX_VXR_ENTRIES];   /* file offset of records */
     struct vix_t_def *next;                      /* next one in line */
 } vix_t;
-#endif /* HDF */
 
 /* like, a discriminated union in the sense of xdr */
 typedef struct {
@@ -136,17 +101,13 @@ typedef struct {
   count != len when a string is resized to something smaller
 
 */
-#ifdef HDF
-#define NC_compare_string(s1, s2) ((s1)->hash != (s2)->hash ? 1 : HDstrcmp((s1)->values, (s2)->values))
-#endif /* HDF */
+#define NC_compare_string(s1, s2) ((s1)->hash != (s2)->hash ? 1 : strcmp((s1)->values, (s2)->values))
 
 typedef struct {
     unsigned count;
     unsigned len;
-#ifdef HDF
-    uint32 hash; /* [non-perfect] hash value for faster comparisons */
-#endif           /* HDF */
-    char *values;
+    uint32   hash; /* [non-perfect] hash value for faster comparisons */
+    char    *values;
 } NC_string;
 
 /* Counted array of ints for assoc list */
@@ -158,22 +119,18 @@ typedef struct {
 /* NC dimension structure */
 typedef struct {
     NC_string *name;
-    long       size;
-#ifdef HDF
-    int32 dim00_compat; /* compatible with Dim0.0 */
-    int32 vgid;         /* id of the Vgroup representing this dimension */
-    int32 count;        /* Number of pointers to this dimension */
-#endif
+    int32      size;
+    int32      dim00_compat; /* compatible with Dim0.0 */
+    int32      vgid;         /* id of the Vgroup representing this dimension */
+    int32      count;        /* Number of pointers to this dimension */
 } NC_dim;
 
 /* NC attribute */
 typedef struct {
     NC_string *name;
     NC_array  *data;
-#ifdef HDF
-    int32 HDFtype; /* it should be in NC_array *data. However, */
-                   /* NC.dims and NC.vars are NC_array too. */
-#endif
+    int32      HDFtype; /* it should be in NC_array *data. However, */
+                        /* NC.dims and NC.vars are NC_array too. */
 } NC_attr;
 
 typedef struct {
@@ -184,33 +141,30 @@ typedef struct {
     unsigned long recsize;   /* length of 'record' */
     int           redefid;
     /* below gets xdr'd */
-    unsigned long numrecs; /* number of 'records' allocated */
-    NC_array     *dims;
-    NC_array     *attrs;
-    NC_array     *vars;
-#ifdef HDF
+    unsigned   numrecs; /* number of 'records' allocated */
+    NC_array  *dims;
+    NC_array  *attrs;
+    NC_array  *vars;
     int32      hdf_file;
     int        file_type;
     int32      vgid;
     int        hdf_mode; /* mode we are attached for */
     hdf_file_t cdf_fp;   /* file pointer used for CDF files */
-#endif
 } NC;
 
 /* NC variable: description and data */
 typedef struct {
-    NC_string     *name;   /* name->values shows data set's name */
-    NC_iarray     *assoc;  /* user definition */
-    unsigned long *shape;  /* compiled info (Each holds a dimension size. -BMR) */
-    unsigned long *dsizes; /* compiled info (Each element holds the amount of space
-        needed to hold values in that dimension, e.g., first dimension
-        size is 10, value type is int32=4, then dsizes[0]=4*10=40. -BMR) */
-    NC_array     *attrs;   /* list of attribute structures */
-    nc_type       type;    /* the discriminant */
-    unsigned long len;     /* the total length originally allocated */
-    size_t        szof;    /* sizeof each value */
-    long          begin;   /* seek index, often an off_t */
-#ifdef HDF
+    NC_string     *name;    /* name->values shows data set's name */
+    NC_iarray     *assoc;   /* user definition */
+    unsigned long *shape;   /* compiled info (Each holds a dimension size. -BMR) */
+    unsigned long *dsizes;  /* compiled info (Each element holds the amount of space
+         needed to hold values in that dimension, e.g., first dimension
+         size is 10, value type is int32=4, then dsizes[0]=4*10=40. -BMR) */
+    NC_array     *attrs;    /* list of attribute structures */
+    nc_type       type;     /* the discriminant */
+    unsigned long len;      /* the total length originally allocated */
+    size_t        szof;     /* sizeof each value */
+    long          begin;    /* seek index, often an off_t */
     NC           *cdf;      /* handle of the file where this var belongs to  */
     int32         vgid;     /* id of the variable's Vgroup */
     uint16        data_ref; /* ref of the variable's data storage (if exists), default 0 */
@@ -240,7 +194,6 @@ typedef struct {
     int32 *rag_list;   /* size of ragged array lines */
     int32  rag_fill;   /* last line in rag_list to be set */
     vix_t *vixHead;    /* list of VXR records for CDF data storage */
-#endif
 } NC_var;
 
 #define IS_RECVAR(vp) ((vp)->shape != NULL ? (*(vp)->shape == NC_UNLIMITED) : 0)
@@ -269,25 +222,14 @@ HDFLIBAPI const char *cdf_routine_name; /* defined in lerror.c */
 /* Format version number for link file */
 #define NCLINKMAGIC 0x43444c01 /*  C D L 1 */
 
-/* #ifndef HDF */ /* HDF has already worked out if we have prototypes */
-#ifdef HDF
-#define PROTOTYPE
-#endif
-#undef PROTO
-#ifndef NO_HAVE_PROTOTYPES
-#define PROTO(x) x
-#else
-#define PROTO(x) ()
-#endif
-/* #endif */ /* HDF */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* If using the real netCDF library and API (when --disable-netcdf configure flag is used)
-   need to mangle the HDF versions of netCDF API function names
-   to not conflict w/ oriinal netCDF ones */
+ * need to mangle the HDF versions of netCDF API function names
+ * to not conflict w/ oriinal netCDF ones
+ */
 #ifndef H4_HAVE_NETCDF
 #define nc_serror         HNAME(nc_serror)
 #define NCadvise          HNAME(NCadvise)
@@ -344,10 +286,8 @@ extern "C" {
 #define NC_dcpy           HNAME(NC_dcpy)
 #define NCxdrfile_sync    HNAME(NCxdrfile_sync)
 #define NCxdrfile_create  HNAME(NCxdrfile_create)
-#ifdef HDF
-#define NCgenio      HNAME(NCgenio)      /* from putgetg.c */
-#define NC_var_shape HNAME(NC_var_shape) /* from var.c */
-#endif
+#define NCgenio           HNAME(NCgenio)      /* from putgetg.c */
+#define NC_var_shape      HNAME(NC_var_shape) /* from var.c */
 #endif /* !H4_HAVE_NETCDF ie. NOT USING HDF version of netCDF ncxxx API */
 
 #define nncpopt H4_F77_FUNC(ncpopt, NCPOPT)
@@ -393,211 +333,202 @@ extern "C" {
 #define nncsfil H4_F77_FUNC(ncsfil, NCSFIL)
 
 #ifdef WIN32
-HDFFCLIBAPI void nncpopt PROTO((int *val));
-HDFFCLIBAPI void nncgopt PROTO((int *val));
-HDFFCLIBAPI int nnccre   PROTO((char *pathname, int *clobmode, int *rcode, int pathnamelen));
-HDFFCLIBAPI int nncopn   PROTO((char *pathname, int *rwmode, int *rcode, int pathnamelen));
-HDFFCLIBAPI int nncddef  PROTO((int *cdfid, char *dimname, int *dimlen, int *rcode, int dimnamelen));
-HDFFCLIBAPI int nncdid   PROTO((int *cdfid, char *dimname, int *rcode, int dimnamelen));
-HDFFCLIBAPI int nncvdef  PROTO((int *cdfid, char *varname, int *datatype, int *ndims, int *dimarray,
-                               int *rcode, int varnamelen));
-HDFFCLIBAPI int nncvid   PROTO((int *cdfid, char *varname, int *rcode, int varnamelen));
-HDFFCLIBAPI int nnctlen  PROTO((int *datatype, int *rcode));
-HDFFCLIBAPI void nncclos PROTO((int *cdfid, int *rcode));
-HDFFCLIBAPI void nncredf PROTO((int *cdfid, int *rcode));
-HDFFCLIBAPI void nncendf PROTO((int *cdfid, int *rcode));
-HDFFCLIBAPI void nncinq  PROTO((int *cdfid, int *ndims, int *nvars, int *natts, int *recdim, int *rcode));
-HDFFCLIBAPI void nncsnc  PROTO((int *cdfid, int *rcode));
-HDFFCLIBAPI void nncabor PROTO((int *cdfid, int *rcode));
-HDFFCLIBAPI void nncdinq PROTO((int *cdfid, int *dimid, char *dimname, int *size, int *rcode,
-                                int dimnamelen));
-HDFFCLIBAPI void nncdren PROTO((int *cdfid, int *dimid, char *dimname, int *rcode, int dimnamelen));
-HDFFCLIBAPI void nncvinq PROTO((int *cdfid, int *varid, char *varname, int *datatype, int *ndims,
-                                int *dimarray, int *natts, int *rcode, int varnamelen));
-HDFFCLIBAPI void nncvpt1 PROTO((int *cdfid, int *varid, int *indices, void *value, int *rcode));
-HDFFCLIBAPI void nncvp1c PROTO((int *cdfid, int *varid, int *indices, char *chval, int *rcode, int chvallen));
-HDFFCLIBAPI void nncvpt  PROTO((int *cdfid, int *varid, int *start, int *count, void *value, int *rcode));
-HDFFCLIBAPI void nncvptc PROTO((int *cdfid, int *varid, int *start, int *count, char *string, int *lenstr,
-                                int *rcode, int stringlen));
-HDFFCLIBAPI void nncvptg PROTO((int *cdfid, int *varid, int *start, int *count, int *stride, int *basis,
-                                void *value, int *rcode));
-HDFFCLIBAPI void nncvpgc PROTO((int *cdfid, int *varid, int *start, int *count, int *stride, int *basis,
-                                char *string, int *rcode, int stringlen));
-HDFFCLIBAPI void nncvgt1 PROTO((int *cdfid, int *varid, int *indices, void *value, int *rcode));
-HDFFCLIBAPI void nncvg1c PROTO((int *cdfid, int *varid, int *indices, char *chval, int *rcode, int chvallen));
-HDFFCLIBAPI void nncvgt  PROTO((int *cdfid, int *varid, int *start, int *count, void *value, int *rcode));
-HDFFCLIBAPI void nncvgtc PROTO((int *cdfid, int *varid, int *start, int *count, char *string, int *lenstr,
-                                int *rcode, int stringlen));
-HDFFCLIBAPI void nncvgtg PROTO((int *cdfid, int *varid, int *start, int *count, int *stride, int *basis,
-                                void *value, int *rcode));
-HDFFCLIBAPI void nncvggc PROTO((int *cdfid, int *varid, int *start, int *count, int *stride, int *basis,
-                                char *string, int *rcode, int stringlen));
-HDFFCLIBAPI void nncvren PROTO((int *cdfid, int *varid, char *varname, int *rcode, int varnamelen));
-HDFFCLIBAPI void nncapt PROTO((int *cdfid, int *varid, char *attname, int *datatype, int *attlen, void *value,
-                               int *rcode, int attnamelen));
-HDFFCLIBAPI void nncaptc PROTO((int *cdfid, int *varid, char *attname, int *datatype, int *lenstr,
-                                char *string, int *rcode, int attnamelen, int stringlen));
-HDFFCLIBAPI void nncainq PROTO((int *cdfid, int *varid, char *attname, int *datatype, int *attlen, int *rcode,
-                                int attnamelen));
-HDFFCLIBAPI void nncagt  PROTO((int *cdfid, int *varid, char *attname, void *value, int *rcode,
-                               int attnamelen));
-HDFFCLIBAPI void nncagtc PROTO((int *cdfid, int *varid, char *attname, char *string, int *lenstr, int *rcode,
-                                int attnamelen, int stringlen));
-HDFFCLIBAPI void nncacpy PROTO((int *incdfid, int *invarid, char *attname, int *outcdfid, int *outvarid,
-                                int *rcode, int attnamelen));
-HDFFCLIBAPI void nncanam PROTO((int *cdfid, int *varid, int *attnum, char *attname, int *rcode,
-                                int attnamelen));
-HDFFCLIBAPI void nncaren PROTO((int *cdfid, int *varid, char *attname, char *newname, int *rcode,
-                                int attnamelen, int newnamelen));
-HDFFCLIBAPI void nncadel PROTO((int *cdfid, int *varid, char *attname, int *rcode, int attnamelen));
-HDFFCLIBAPI int nncsfil  PROTO((int *cdfid, int *fillmode, int *rcode));
+HDFFCLIBAPI void nncpopt(int *val);
+HDFFCLIBAPI void nncgopt(int *val);
+HDFFCLIBAPI int  nnccre(char *pathname, int *clobmode, int *rcode, int pathnamelen);
+HDFFCLIBAPI int  nncopn(char *pathname, int *rwmode, int *rcode, int pathnamelen);
+HDFFCLIBAPI int  nncddef(int *cdfid, char *dimname, int *dimlen, int *rcode, int dimnamelen);
+HDFFCLIBAPI int  nncdid(int *cdfid, char *dimname, int *rcode, int dimnamelen);
+HDFFCLIBAPI int  nncvdef(int *cdfid, char *varname, int *datatype, int *ndims, int *dimarray, int *rcode,
+                         int varnamelen);
+HDFFCLIBAPI int  nncvid(int *cdfid, char *varname, int *rcode, int varnamelen);
+HDFFCLIBAPI int  nnctlen(int *datatype, int *rcode);
+HDFFCLIBAPI void nncclos(int *cdfid, int *rcode);
+HDFFCLIBAPI void nncredf(int *cdfid, int *rcode);
+HDFFCLIBAPI void nncendf(int *cdfid, int *rcode);
+HDFFCLIBAPI void nncinq(int *cdfid, int *ndims, int *nvars, int *natts, int *recdim, int *rcode);
+HDFFCLIBAPI void nncsnc(int *cdfid, int *rcode);
+HDFFCLIBAPI void nncabor(int *cdfid, int *rcode);
+HDFFCLIBAPI void nncdinq(int *cdfid, int *dimid, char *dimname, int *size, int *rcode, int dimnamelen);
+HDFFCLIBAPI void nncdren(int *cdfid, int *dimid, char *dimname, int *rcode, int dimnamelen);
+HDFFCLIBAPI void nncvinq(int *cdfid, int *varid, char *varname, int *datatype, int *ndims, int *dimarray,
+                         int *natts, int *rcode, int varnamelen);
+HDFFCLIBAPI void nncvpt1(int *cdfid, int *varid, int *indices, void *value, int *rcode);
+HDFFCLIBAPI void nncvp1c(int *cdfid, int *varid, int *indices, char *chval, int *rcode, int chvallen);
+HDFFCLIBAPI void nncvpt(int *cdfid, int *varid, int *start, int *count, void *value, int *rcode);
+HDFFCLIBAPI void nncvptc(int *cdfid, int *varid, int *start, int *count, char *string, int *lenstr,
+                         int *rcode, int stringlen);
+HDFFCLIBAPI void nncvptg(int *cdfid, int *varid, int *start, int *count, int *stride, int *basis, void *value,
+                         int *rcode);
+HDFFCLIBAPI void nncvpgc(int *cdfid, int *varid, int *start, int *count, int *stride, int *basis,
+                         char *string, int *rcode, int stringlen);
+HDFFCLIBAPI void nncvgt1(int *cdfid, int *varid, int *indices, void *value, int *rcode);
+HDFFCLIBAPI void nncvg1c(int *cdfid, int *varid, int *indices, char *chval, int *rcode, int chvallen);
+HDFFCLIBAPI void nncvgt(int *cdfid, int *varid, int *start, int *count, void *value, int *rcode);
+HDFFCLIBAPI void nncvgtc(int *cdfid, int *varid, int *start, int *count, char *string, int *lenstr,
+                         int *rcode, int stringlen);
+HDFFCLIBAPI void nncvgtg(int *cdfid, int *varid, int *start, int *count, int *stride, int *basis, void *value,
+                         int *rcode);
+HDFFCLIBAPI void nncvggc(int *cdfid, int *varid, int *start, int *count, int *stride, int *basis,
+                         char *string, int *rcode, int stringlen);
+HDFFCLIBAPI void nncvren(int *cdfid, int *varid, char *varname, int *rcode, int varnamelen);
+HDFFCLIBAPI void nncapt(int *cdfid, int *varid, char *attname, int *datatype, int *attlen, void *value,
+                        int *rcode, int attnamelen);
+HDFFCLIBAPI void nncaptc(int *cdfid, int *varid, char *attname, int *datatype, int *lenstr, char *string,
+                         int *rcode, int attnamelen, int stringlen);
+HDFFCLIBAPI void nncainq(int *cdfid, int *varid, char *attname, int *datatype, int *attlen, int *rcode,
+                         int attnamelen);
+HDFFCLIBAPI void nncagt(int *cdfid, int *varid, char *attname, void *value, int *rcode, int attnamelen);
+HDFFCLIBAPI void nncagtc(int *cdfid, int *varid, char *attname, char *string, int *lenstr, int *rcode,
+                         int attnamelen, int stringlen);
+HDFFCLIBAPI void nncacpy(int *incdfid, int *invarid, char *attname, int *outcdfid, int *outvarid, int *rcode,
+                         int attnamelen);
+HDFFCLIBAPI void nncanam(int *cdfid, int *varid, int *attnum, char *attname, int *rcode, int attnamelen);
+HDFFCLIBAPI void nncaren(int *cdfid, int *varid, char *attname, char *newname, int *rcode, int attnamelen,
+                         int newnamelen);
+HDFFCLIBAPI void nncadel(int *cdfid, int *varid, char *attname, int *rcode, int attnamelen);
+HDFFCLIBAPI int  nncsfil(int *cdfid, int *fillmode, int *rcode);
 #endif
 
-HDFLIBAPI void nc_serror PROTO((const char *fmt, ...));
-HDFLIBAPI void NCadvise  PROTO((int err, const char *fmt, ...));
+HDFLIBAPI void nc_serror(const char *fmt, ...);
+HDFLIBAPI void NCadvise(int err, const char *fmt, ...);
 
-HDFLIBAPI int NC_computeshapes PROTO((NC * handle));
-HDFLIBAPI int NC_xtypelen      PROTO((nc_type type));
-HDFLIBAPI int NC_xlen_array    PROTO((NC_array * array));
-HDFLIBAPI int NC_xlen_attr     PROTO((NC_attr * *app));
-HDFLIBAPI int NC_xlen_cdf      PROTO((NC * cdf));
-HDFLIBAPI int NC_xlen_dim      PROTO((NC_dim * *dpp));
-HDFLIBAPI int NC_xlen_iarray   PROTO((NC_iarray * iarray));
-HDFLIBAPI int NC_xlen_string   PROTO((NC_string * cdfstr));
-HDFLIBAPI int NC_xlen_var      PROTO((NC_var * *vpp));
+HDFLIBAPI int NC_computeshapes(NC *handle);
+HDFLIBAPI int NC_xtypelen(nc_type type);
+HDFLIBAPI int NC_xlen_array(NC_array *array);
+HDFLIBAPI int NC_xlen_attr(NC_attr **app);
+HDFLIBAPI int NC_xlen_cdf(NC *cdf);
+HDFLIBAPI int NC_xlen_dim(NC_dim **dpp);
+HDFLIBAPI int NC_xlen_iarray(NC_iarray *iarray);
+HDFLIBAPI int NC_xlen_string(NC_string *cdfstr);
+HDFLIBAPI int NC_xlen_var(NC_var **vpp);
 
-HDFLIBAPI char *NCmemset PROTO((char *s, int c, int n));
+HDFLIBAPI char *NCmemset(char *s, int c, int n);
 
-HDFLIBAPI void NC_arrayfill      PROTO((void *lo, size_t len, nc_type type));
-HDFLIBAPI void NC_copy_arrayvals PROTO((char *target, NC_array *array));
-HDFLIBAPI int NC_free_array      PROTO((NC_array * array));
-HDFLIBAPI int NC_free_attr       PROTO((NC_attr * attr));
-HDFLIBAPI int NC_free_cdf        PROTO((NC * handle));
-HDFLIBAPI int NC_free_dim        PROTO((NC_dim * dim));
-HDFLIBAPI int NC_free_iarray     PROTO((NC_iarray * iarray));
-HDFLIBAPI int NC_free_string     PROTO((NC_string * cdfstr));
-HDFLIBAPI int NC_free_var        PROTO((NC_var * var));
+HDFLIBAPI void NC_arrayfill(void *lo, size_t len, nc_type type);
+HDFLIBAPI void NC_copy_arrayvals(char *target, NC_array *array);
+HDFLIBAPI int  NC_free_array(NC_array *array);
+HDFLIBAPI int  NC_free_attr(NC_attr *attr);
+HDFLIBAPI int  NC_free_cdf(NC *handle);
+HDFLIBAPI int  NC_free_dim(NC_dim *dim);
+HDFLIBAPI int  NC_free_iarray(NC_iarray *iarray);
+HDFLIBAPI int  NC_free_string(NC_string *cdfstr);
+HDFLIBAPI int  NC_free_var(NC_var *var);
 
-HDFLIBAPI Void *NC_incr_array PROTO((NC_array * array, Void *tail));
+HDFLIBAPI Void *NC_incr_array(NC_array *array, Void *tail);
 
-HDFLIBAPI int NC_dimid         PROTO((NC * handle, char *name));
-HDFLIBAPI bool_t NCcktype      PROTO((nc_type datatype));
-HDFLIBAPI bool_t NC_indefine   PROTO((int cdfid, bool_t iserr));
-HDFLIBAPI bool_t xdr_cdf       PROTO((XDR * xdrs, NC **handlep));
-HDFLIBAPI bool_t xdr_numrecs   PROTO((XDR * xdrs, NC *handle));
-HDFLIBAPI bool_t xdr_shorts    PROTO((XDR * xdrs, short *sp, u_int cnt));
-HDFLIBAPI bool_t xdr_NC_array  PROTO((XDR * xdrs, NC_array **app));
-HDFLIBAPI bool_t xdr_NC_attr   PROTO((XDR * xdrs, NC_attr **app));
-HDFLIBAPI bool_t xdr_NC_dim    PROTO((XDR * xdrs, NC_dim **dpp));
-HDFLIBAPI bool_t xdr_NC_fill   PROTO((XDR * xdrs, NC_var *vp));
-HDFLIBAPI bool_t xdr_NC_iarray PROTO((XDR * xdrs, NC_iarray **ipp));
-HDFLIBAPI bool_t xdr_NC_string PROTO((XDR * xdrs, NC_string **spp));
-HDFLIBAPI bool_t xdr_NC_var    PROTO((XDR * xdrs, NC_var **vpp));
+HDFLIBAPI int    NC_dimid(NC *handle, char *name);
+HDFLIBAPI bool_t NCcktype(nc_type datatype);
+HDFLIBAPI bool_t NC_indefine(int cdfid, bool_t iserr);
+HDFLIBAPI bool_t xdr_cdf(XDR *xdrs, NC **handlep);
+HDFLIBAPI bool_t xdr_numrecs(XDR *xdrs, NC *handle);
+HDFLIBAPI bool_t xdr_shorts(XDR *xdrs, short *sp, unsigned cnt);
+HDFLIBAPI bool_t xdr_NC_array(XDR *xdrs, NC_array **app);
+HDFLIBAPI bool_t xdr_NC_attr(XDR *xdrs, NC_attr **app);
+HDFLIBAPI bool_t xdr_NC_dim(XDR *xdrs, NC_dim **dpp);
+HDFLIBAPI bool_t xdr_NC_fill(XDR *xdrs, NC_var *vp);
+HDFLIBAPI bool_t xdr_NC_iarray(XDR *xdrs, NC_iarray **ipp);
+HDFLIBAPI bool_t xdr_NC_string(XDR *xdrs, NC_string **spp);
+HDFLIBAPI bool_t xdr_NC_var(XDR *xdrs, NC_var **vpp);
 
-HDFLIBAPI size_t NC_typelen PROTO((nc_type type));
+HDFLIBAPI size_t NC_typelen(nc_type type);
 
-HDFLIBAPI NC *NC_check_id        PROTO((int cdfid));
-HDFLIBAPI NC *NC_dup_cdf         PROTO((const char *name, int mode, NC *old));
-HDFLIBAPI NC *NC_new_cdf         PROTO((const char *name, int mode));
-HDFLIBAPI NC_array *NC_new_array PROTO((nc_type type, unsigned count, const void *values));
-HDFLIBAPI NC_array *NC_re_array  PROTO((NC_array * old, nc_type type, unsigned count, const void *values));
-HDFLIBAPI NC_attr *NC_new_attr   PROTO((const char *name, nc_type type, unsigned count, const void *values));
-HDFLIBAPI NC_attr **NC_findattr  PROTO((NC_array * *ap, const char *name));
-HDFLIBAPI NC_dim *NC_new_dim     PROTO((const char *name, long size));
-HDFLIBAPI NC_iarray *NC_new_iarray PROTO((unsigned count, const int values[]));
-HDFLIBAPI NC_string *NC_new_string PROTO((unsigned count, const char *str));
-HDFLIBAPI NC_string *NC_re_string  PROTO((NC_string * old, unsigned count, const char *str));
-HDFLIBAPI NC_var *NC_hlookupvar    PROTO((NC * handle, int varid));
-HDFLIBAPI NC_var *NC_new_var       PROTO((const char *name, nc_type type, int ndims, const int *dims));
-HDFLIBAPI int NCvario PROTO((NC * handle, int varid, const long *start, const long *edges, void *values));
-HDFLIBAPI bool_t NCcoordck    PROTO((NC * handle, NC_var *vp, const long *coords));
-HDFLIBAPI bool_t xdr_NCvshort PROTO((XDR * xdrs, unsigned which, short *values));
-HDFLIBAPI bool_t NC_dcpy      PROTO((XDR * target, XDR *source, long nbytes));
-HDFLIBAPI int NCxdrfile_sync  PROTO((XDR * xdrs));
+HDFLIBAPI NC        *NC_check_id(int cdfid);
+HDFLIBAPI NC        *NC_dup_cdf(const char *name, int mode, NC *old);
+HDFLIBAPI NC        *NC_new_cdf(const char *name, int mode);
+HDFLIBAPI NC_array  *NC_new_array(nc_type type, unsigned count, const void *values);
+HDFLIBAPI NC_array  *NC_re_array(NC_array *old, nc_type type, unsigned count, const void *values);
+HDFLIBAPI NC_attr   *NC_new_attr(const char *name, nc_type type, unsigned count, const void *values);
+HDFLIBAPI NC_attr  **NC_findattr(NC_array **ap, const char *name);
+HDFLIBAPI NC_dim    *NC_new_dim(const char *name, long size);
+HDFLIBAPI NC_iarray *NC_new_iarray(unsigned count, const int values[]);
+HDFLIBAPI NC_string *NC_new_string(unsigned count, const char *str);
+HDFLIBAPI NC_string *NC_re_string(NC_string *old, unsigned count, const char *str);
+HDFLIBAPI NC_var    *NC_hlookupvar(NC *handle, int varid);
+HDFLIBAPI NC_var    *NC_new_var(const char *name, nc_type type, int ndims, const int *dims);
+HDFLIBAPI int        NCvario(NC *handle, int varid, const long *start, const long *edges, void *values);
+HDFLIBAPI bool_t     NCcoordck(NC *handle, NC_var *vp, const long *coords);
+HDFLIBAPI bool_t     xdr_NCvshort(XDR *xdrs, unsigned which, short *values);
+HDFLIBAPI bool_t     NC_dcpy(XDR *target, XDR *source, long nbytes);
+HDFLIBAPI int        NCxdrfile_sync(XDR *xdrs);
 
-HDFLIBAPI int NCxdrfile_create PROTO((XDR * xdrs, const char *path, int ncmode));
+HDFLIBAPI int NCxdrfile_create(XDR *xdrs, const char *path, int ncmode);
 
-#ifdef HDF
-/* this routine is found in 'xdrposix.c' */
-HDFLIBAPI void hdf_xdrfile_create PROTO((XDR * xdrs, int ncop));
+HDFLIBAPI intn hdf_fill_array(Void *storage, int32 len, Void *value, int32 type);
 
-HDFLIBAPI intn hdf_fill_array PROTO((Void * storage, int32 len, Void *value, int32 type));
+HDFLIBAPI intn hdf_get_data(NC *handle, NC_var *vp);
 
-HDFLIBAPI intn hdf_get_data PROTO((NC * handle, NC_var *vp));
+HDFLIBAPI int32 hdf_get_vp_aid(NC *handle, NC_var *vp);
 
-HDFLIBAPI int32 hdf_get_vp_aid PROTO((NC * handle, NC_var *vp));
+HDFLIBAPI int hdf_map_type(nc_type);
 
-HDFLIBAPI int hdf_map_type PROTO((nc_type));
+HDFLIBAPI nc_type hdf_unmap_type(int);
 
-HDFLIBAPI nc_type hdf_unmap_type PROTO((int));
+HDFLIBAPI intn hdf_get_ref(NC *, int);
 
-HDFLIBAPI intn hdf_get_ref PROTO((NC *, int));
+HDFLIBAPI intn hdf_create_dim_vdata(XDR *, NC *, NC_dim *);
 
-HDFLIBAPI intn hdf_create_dim_vdata PROTO((XDR *, NC *, NC_dim *));
+HDFLIBAPI intn hdf_create_compat_dim_vdata(XDR *xdrs, NC *handle, NC_dim *dim, int32 dimval_ver);
 
-HDFLIBAPI intn hdf_create_compat_dim_vdata PROTO((XDR * xdrs, NC *handle, NC_dim *dim, int32 dimval_ver));
+HDFLIBAPI intn hdf_write_attr(XDR *, NC *, NC_attr **);
 
-HDFLIBAPI intn hdf_write_attr PROTO((XDR *, NC *, NC_attr **));
+HDFLIBAPI int32 hdf_write_dim(XDR *, NC *, NC_dim **, int32);
 
-HDFLIBAPI int32 hdf_write_dim PROTO((XDR *, NC *, NC_dim **, int32));
+HDFLIBAPI int32 hdf_write_var(XDR *, NC *, NC_var **);
 
-HDFLIBAPI int32 hdf_write_var PROTO((XDR *, NC *, NC_var **));
+HDFLIBAPI intn hdf_write_xdr_cdf(XDR *, NC **);
 
-HDFLIBAPI intn hdf_write_xdr_cdf PROTO((XDR *, NC **));
+HDFLIBAPI intn hdf_conv_scales(NC **);
 
-HDFLIBAPI intn hdf_conv_scales PROTO((NC **));
+HDFLIBAPI intn hdf_read_dims(XDR *, NC *, int32);
 
-HDFLIBAPI intn hdf_read_dims PROTO((XDR *, NC *, int32));
+HDFLIBAPI NC_array *hdf_read_attrs(XDR *, NC *, int32);
 
-HDFLIBAPI NC_array *hdf_read_attrs PROTO((XDR *, NC *, int32));
+HDFLIBAPI intn hdf_read_vars(XDR *, NC *, int32);
 
-HDFLIBAPI intn hdf_read_vars PROTO((XDR *, NC *, int32));
+HDFLIBAPI intn hdf_read_xdr_cdf(XDR *, NC **);
 
-HDFLIBAPI intn hdf_read_xdr_cdf PROTO((XDR *, NC **));
+HDFLIBAPI intn hdf_xdr_cdf(XDR *, NC **);
 
-HDFLIBAPI intn hdf_xdr_cdf PROTO((XDR *, NC **));
+HDFLIBAPI intn hdf_vg_clobber(NC *, int);
 
-HDFLIBAPI intn hdf_vg_clobber PROTO((NC *, int));
+HDFLIBAPI intn hdf_cdf_clobber(NC *);
 
-HDFLIBAPI intn hdf_cdf_clobber PROTO((NC *));
+HDFLIBAPI intn hdf_close(NC *);
 
-HDFLIBAPI intn hdf_close PROTO((NC *));
+HDFLIBAPI intn hdf_read_sds_dims(NC *);
 
-HDFLIBAPI intn hdf_read_sds_dims PROTO((NC *));
+HDFLIBAPI intn hdf_read_sds_cdf(XDR *, NC **);
 
-HDFLIBAPI intn hdf_read_sds_cdf PROTO((XDR *, NC **));
+HDFLIBAPI intn SDPfreebuf(void);
 
-HDFLIBAPI intn SDPfreebuf PROTO((void));
+HDFLIBAPI intn NCgenio(NC *handle, int varid, const long *start, const long *count, const long *stride,
+                       const long *imap, void *values);
 
-HDFLIBAPI intn NCgenio PROTO((NC * handle, int varid, const long *start, const long *count,
-                              const long *stride, const long *imap, void *values));
+HDFLIBAPI intn NC_var_shape(NC_var *var, NC_array *dims);
 
-HDFLIBAPI intn NC_var_shape PROTO((NC_var * var, NC_array *dims));
+HDFLIBAPI intn NC_reset_maxopenfiles(intn req_max);
 
-HDFLIBAPI intn NC_reset_maxopenfiles PROTO((intn req_max));
+HDFLIBAPI intn NC_get_maxopenfiles(void);
 
-HDFLIBAPI intn NC_get_maxopenfiles PROTO(());
+HDFLIBAPI intn NC_get_systemlimit(void);
 
-HDFLIBAPI intn NC_get_systemlimit PROTO(());
-
-HDFLIBAPI int NC_get_numopencdfs PROTO(());
+HDFLIBAPI int NC_get_numopencdfs(void);
 
 /* CDF stuff. don't need anymore? -GV */
-HDFLIBAPI nc_type cdf_unmap_type PROTO((int type));
+HDFLIBAPI nc_type cdf_unmap_type(int type);
 
-HDFLIBAPI bool_t nssdc_read_cdf PROTO((XDR * xdrs, NC **handlep));
+HDFLIBAPI bool_t nssdc_read_cdf(XDR *xdrs, NC **handlep);
 
-HDFLIBAPI bool_t nssdc_write_cdf PROTO((XDR * xdrs, NC **handlep));
+HDFLIBAPI bool_t nssdc_write_cdf(XDR *xdrs, NC **handlep);
 
-HDFLIBAPI bool_t nssdc_xdr_cdf PROTO((XDR * xdrs, NC **handlep));
+HDFLIBAPI bool_t nssdc_xdr_cdf(XDR *xdrs, NC **handlep);
 
 HDFLIBAPI intn HDiscdf(const char *filename);
 
 HDFLIBAPI intn HDisnetcdf(const char *filename);
 
 HDFLIBAPI intn HDisnetcdf64(const char *filename);
-
-#endif /* HDF */
 
 #ifdef __cplusplus
 }

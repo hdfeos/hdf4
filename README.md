@@ -1,23 +1,89 @@
-HDF version 4.2.15-post0 currently under development
-===================================================
+HDF version 4.3.0-1 currently under development
+
+![HDF Logo](doc/img/HDF4.png)
 
 [![master build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf4/main.yml?branch=master&label=master)](https://github.com/HDFGroup/hdf4/actions?query=branch%3Amaster)
+[![HDF-EOS build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf4/hdfeos2.yml?branch=master&label=HDF-EOS)](https://github.com/HDFGroup/hdf4/actions?query=branch%3Amaster)
 [![BSD](https://img.shields.io/badge/License-BSD-blue.svg)](https://github.com/HDFGroup/hdf4/blob/develop/COPYING)
 
-Information about HDF
----------------------
+DOCUMENTATION
+-------------
+Full Documentation and Programming Resources for this release can be found at
 
- The HDF (or HDF4) home page is located here:
+   https://portal.hdfgroup.org/display/HDF4
 
-    https://support.hdfgroup.org/products/hdf4/
+See the RELEASE.txt file in the release\_notes/ directory for information specific
+to the features and updates included in this release of the library.
 
- The most recent version of the software can be obtained from:
+Several more files are located within the release\_notes/ directory with specific
+details for several common platforms and configurations.
 
-    https://support.hdfgroup.org/release4/obtain.html
+    INSTALL - Start Here. General instructions for compiling and installing the library
+    INSTALL_CMAKE  - instructions for building with CMake (Kitware.com)
+    INSTALL_WINDOWS and INSTALL_CYGWIN - MS Windows installations.
 
- The HDF documentation can be found in:
 
-    https://support.hdfgroup.org/release4/doc/index.html
+FORUM and NEWS
+--------------
+The following public forums are provided for public announcements and discussions
+of interest to the general HDF4 Community.
+
+   - Homepage of the Forum
+   https://forum.hdfgroup.org
+
+   - News and Announcement
+   https://forum.hdfgroup.org/c/news-and-announcements-from-the-hdf-group
+
+   - HDF4 Topics
+   https://forum.hdfgroup.org/c/hdf4
+
+These forums are provided as an open and public service for searching and reading.
+Posting requires completing a simple registration and allows one to join in the
+conversation.  Please read the following instructions pertaining to the Forum's
+use and configuration
+    https://forum.hdfgroup.org/t/quickstart-guide-welcome-to-the-new-hdf-forum
+
+
+RELEASE SCHEDULE
+----------------
+
+![HDF4 release schedule](doc/img/release-schedule.png) 
+
+HDF4 does not release on a regular schedule. Instead, releases are driven by
+new features and bug fixes, though we try to have at least one release of each
+maintenance branch per year. Future HDF4 releases indicated on this schedule
+are tentative.
+
+| Release | New Features |
+| ------- | ------------ |
+| 4.3.0 | Remove XDR, Stop deploying internal header files |
+| 4.4.0 | Drop FORTRAN 77 support, Unified library |
+
+HDF 4.3.0 (February 2024)
+* Minimum XDR functionality will be built into the library, so linking to TI-RPC, etc. will not be necessary
+* We will no longer deploy undocumented, internal header files (the public, documented HDF4 API will not be affected)
+
+The 4.2 maintenance line will be retired when 4.3.0 releases. There are no
+more planned HDF4 4.3.x releases.
+
+HDF 4.4.0 (February 2025)
+* We will drop support for FORTRAN 77 and move to modern Fortran (2003 or 2008)
+* libdf and libmfhdf will be merged into a single libhdf4 library, Fortran will be built as a separate library
+
+
+SNAPSHOTS, PREVIOUS RELEASES AND SOURCE CODE
+--------------------------------------------
+Periodically development code snapshots are provided at the following URL:
+    
+   https://github.com/HDFGroup/hdf4/releases/tag/snapshot
+
+Source packages for current and previous releases are located at:
+
+   https://portal.hdfgroup.org/downloads/
+
+Development code is available at our Github location:
+    
+   https://github.com/HDFGroup/hdf4.git
 
 
 Source Distribution Layout
@@ -43,8 +109,6 @@ Source Distribution Layout
    mfhdf  -- The netCDF(mfhdf) part of the HDF/mfhdf distribution and
              additional HDF utilities, such as hdp, hrepack, hdfimport, etc.
 
-   man    -- An incomplete set of man page(s) for HDF.
-
    release\_notes -- 
              Installation instructions for UNIX and Windows.
              Descriptions of new features and bug fixes in this release.
@@ -65,10 +129,3 @@ System Requirements
 
    * C and Fortran compilers. For a list of the supported compilers,
      see release_notes/RELEASE.txt file.
-
-
-Configuring/Testing/Installing 
-------------------------------
- See the file release\_notes/INSTALL for instructions on configuring, testing,
- and installing this software on Unix and non-UNIX systems.
-

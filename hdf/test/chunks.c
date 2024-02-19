@@ -28,7 +28,7 @@
  *       The rest of he data should contain fill values.
  *
  *    3. Create a new element but now there will be partial chunks
- *       because chunk lengths are not an even multiple of dimesion lengths.
+ *       because chunk lengths are not an even multiple of dimension lengths.
  *       Set dimension to 4x4 array with 4 chunks where each chunk is
  *       3x2 = 6 bytes. Real data size is 16 bytes, size with chunks is
  *       6 bytes x 4 chunks = 24 bytes
@@ -107,10 +107,6 @@
  *   HMCsetMaxCache()
  *   HMCwriteChunk()
  *   HMCreadChunk()
- *
- *
- * Author -GeorgeV
- *
  */
 
 #include "tproto.h"
@@ -120,8 +116,8 @@
 #define BUFSIZE       12288
 
 /* Some static data buffers */
-static uint8 outbuf[BUFSIZE], /* output data buffer */
-    inbuf[BUFSIZE];           /* input data buffer */
+static uint8 *outbuf = NULL;
+static uint8 *inbuf  = NULL;
 
 /* used to verify data in Test 2. */
 static uint8 outbuf_2[16] = {0, 0, 2, 3, 0, 0, 6, 7, 8, 9, 0, 0, 12, 13, 0, 0};
@@ -163,8 +159,6 @@ static uint8 u8_data[2][3][4] = {{{0, 1, 2, 3}, {10, 11, 12, 13}, {20, 21, 22, 2
 
 /*
  * main entry point to tests the Special Chunking layer...
- *
- * -GeorgeV
  */
 void
 test_chunks(void)
@@ -194,12 +188,18 @@ test_chunks(void)
     model_info      minfo;
     intn            errors = 0;
 
+    outbuf = (uint8 *)calloc(BUFSIZE, sizeof(uint8));
+    inbuf  = (uint8 *)calloc(BUFSIZE, sizeof(uint8));
+
+    CHECK_ALLOC(outbuf, "outbuf", "test_chunks");
+    CHECK_ALLOC(inbuf, "outbuf", "test_chunks");
+
     /* initialize out buffer */
     for (i = 0; i < BUFSIZE; i++)
         outbuf[i] = (char)(i % 256);
 
     /* allocate space for chunk dimensions */
-    if ((chunk[0].pdims = (DIM_DEF *)HDmalloc(5 * sizeof(DIM_DEF))) == NULL) {
+    if ((chunk[0].pdims = (DIM_DEF *)malloc(5 * sizeof(DIM_DEF))) == NULL) {
         printf("test_chunks: error allocatin space for chunk dims\n");
         errors++;
         goto done;
@@ -344,7 +344,7 @@ test_chunks(void)
         }
 
         /* free allocated space by routine */
-        HDfree(info_block.cdims);
+        free(info_block.cdims);
     }
     else {
         fprintf(stderr, "ERROR: HDget_specail_info does not return the correct values \n");
@@ -483,7 +483,7 @@ test_chunks(void)
 
     /*
        3. Create a new element but now there will be partial chunks
-       because chunk lengths are not an even multiple of dimesion lengths.
+       because chunk lengths are not an even multiple of dimension lengths.
        Set dimension to 4x4 array with 4 chunks where each chunk is 3x2 = 6 bytes.
        Real data size is 16 bytes, size with chunks is
        6 bytes x 4 chunks = 24 bytes
@@ -704,7 +704,7 @@ test_chunks(void)
         }
 
         /* free allocated space by routine */
-        HDfree(info_block.cdims);
+        free(info_block.cdims);
     }
     else {
         fprintf(stderr, "ERROR: HDget_specail_info does not return the correct values \n");
@@ -1055,7 +1055,7 @@ test_chunks(void)
         }
 
         /* free allocated space by routine */
-        HDfree(info_block.cdims);
+        free(info_block.cdims);
     }
     else {
         fprintf(stderr, "ERROR: HDget_specail_info does not return the correct values \n");
@@ -1423,8 +1423,8 @@ test_chunks(void)
         for (j = 0; j < 3; j++) {
             for (k = 0; k < 4; k++) {
                 if (inbuf_f32[i][j][k] != f32_data[i][j][k]) {
-                    printf("Wrong data at inbuf_f32[%d][%d][%d], out %f in %f\n", i, j, k, f32_data[i][j][k],
-                           inbuf_f32[i][j][k]);
+                    printf("Wrong data at inbuf_f32[%d][%d][%d], out %f in %f\n", i, j, k,
+                           (double)f32_data[i][j][k], (double)inbuf_f32[i][j][k]);
                     errors++;
                 }
             }
@@ -2030,7 +2030,7 @@ test_chunks(void)
         }
 
         /* free allocated space by routine */
-        HDfree(info_block.cdims);
+        free(info_block.cdims);
     }
     else {
         fprintf(stderr, "ERROR: HDget_specail_info does not return the correct values \n");
@@ -2195,8 +2195,10 @@ test_chunks(void)
 
 done:
     /* Don't forget to free dimensions allocate for chunk definition */
-    if (chunk[0].pdims != NULL)
-        HDfree(chunk[0].pdims);
+    free(chunk[0].pdims);
+
+    free(outbuf);
+    free(inbuf);
 
     num_errs += errors; /* increment global error count */
 } /* test_chunks() */

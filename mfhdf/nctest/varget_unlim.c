@@ -5,8 +5,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "h4config.h"
+#include "hdf.h"
+
 #ifdef H4_HAVE_NETCDF
 #include "netcdf.h"
 #else
@@ -16,11 +18,7 @@
 #include "testcdf.h" /* defines in-memory test cdf structure */
 #include "error.h"
 #include "tests.h"
-#include "alloc.h"
 #include "emalloc.h"
-#ifdef HDF
-#include "hdf.h"
-#endif
 
 float a_val[2][3]   = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
 int   date_val[12]  = {840116, 840214, 840316, 840415, 840516, 840615,
@@ -52,7 +50,7 @@ test_ncvarget_unlim(char *basefile)
     long        start[3], count[3];
     int         i, j, n;
 
-    (void)fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
 
     if (srcdir) {
         strcpy(testfile, srcdir);
@@ -158,7 +156,7 @@ test_ncvarget_unlim(char *basefile)
     status = ncclose(ncid);
 
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }

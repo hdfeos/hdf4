@@ -47,7 +47,8 @@
 #define TESTFILE_NAME "t.hdf"
 #define BUF_SIZE      4096
 
-static uint8 outbuf[BUF_SIZE], inbuf[BUF_SIZE];
+static uint8 *outbuf = NULL;
+static uint8 *inbuf  = NULL;
 
 void
 test_hfile(void)
@@ -61,6 +62,12 @@ test_hfile(void)
     int    i;
     intn   errors = 0;
     intn   ret_bool;
+
+    outbuf = (uint8 *)calloc(BUF_SIZE, sizeof(uint8));
+    inbuf  = (uint8 *)calloc(BUF_SIZE, sizeof(uint8));
+
+    CHECK_ALLOC(outbuf, "outbuf", "test_hfile");
+    CHECK_ALLOC(inbuf, "outbuf", "test_hfile");
 
     for (i = 0; i < BUF_SIZE; i++)
         outbuf[i] = (char)(i % 256);
@@ -76,8 +83,8 @@ test_hfile(void)
     CHECK_VOID(ret, FAIL, "Hnewref");
 
     MESSAGE(5, printf("Reading / Writing to file\n"););
-    ret = Hputelement(fid, (uint16)100, 1, (const uint8 *)"testing 100 1",
-                      (int32)HDstrlen("testing 100 1") + 1);
+    ret =
+        Hputelement(fid, (uint16)100, 1, (const uint8 *)"testing 100 1", (int32)strlen("testing 100 1") + 1);
     CHECK_VOID(ret, FAIL, "Hputelement");
 
     ret = Hputelement(fid, (uint16)100, (uint16)4, outbuf, 2000);
@@ -87,7 +94,7 @@ test_hfile(void)
     CHECK_VOID(ret, FAIL, "Hnewref");
 
     ret = Hputelement(fid, (uint16)103, (uint16)2, (const uint8 *)"element 103 2",
-                      (int32)HDstrlen("element 103 2") + 1);
+                      (int32)strlen("element 103 2") + 1);
     CHECK_VOID(ret, FAIL, "Hputlement");
 
     ret = Hgetelement(fid, (uint16)100, (uint16)4, inbuf);
@@ -128,7 +135,7 @@ test_hfile(void)
         errors++;
     }
 
-    if (HDstrcmp((const char *)inbuf, (const char *)"testing 100 1")) {
+    if (strcmp((const char *)inbuf, (const char *)"testing 100 1")) {
         fprintf(stderr, "ERROR: Hread returned the wrong data\n");
         fprintf(stderr, "\t       Is: %s\n", (char *)inbuf);
         fprintf(stderr, "\tShould be: testing 100 1\n");
@@ -211,4 +218,7 @@ test_hfile(void)
 
     ret_bool = (intn)Hishdf("qqqqqqqq.qqq"); /* I sure hope it isn't there */
     CHECK_VOID(ret, TRUE, "Hishdf");
+
+    free(outbuf);
+    free(inbuf);
 }

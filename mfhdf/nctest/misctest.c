@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "h4config.h"
+#include "hdf.h"
+
 #ifdef H4_HAVE_NETCDF
 #include "netcdf.h"
 #else
@@ -29,7 +30,7 @@ test_nctypelen()
     int         nerrs   = 0;
     static char pname[] = "test_nctypelen";
 
-    (void)fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
 
     if (nctypelen(NC_BYTE) != sizeof(char)) {
         error("%s: nctypelen failed for NC_BYTE", pname);
@@ -56,7 +57,7 @@ test_nctypelen()
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }

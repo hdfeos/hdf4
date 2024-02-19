@@ -7,21 +7,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "h4config.h"
+#include "hdf.h"
+
 #ifdef H4_HAVE_NETCDF
 #include "netcdf.h"
 #else
 #include "hdf4_netcdf.h"
 #endif
+
 #include "testcdf.h" /* defines in-memory test netcdf structure */
 #include "add.h"     /* functions to update in-memory netcdf */
 #include "error.h"
 #include "tests.h"
-#include "alloc.h"
 #include "emalloc.h"
-#ifdef HDF
-#include "hdf.h"
-#endif
 
 #define LEN_OF(array) ((sizeof array) / (sizeof array[0]))
 
@@ -41,7 +39,7 @@ test_nccreate(char *path)
     static char pname[] = "test_nccreate";
     int         cdfid;
 
-    (void)fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
 
     if ((cdfid = nccreate(path, NC_CLOBBER)) == -1) {
         error("%s: nccreate failed to NC_CLOBBER", pname);
@@ -72,11 +70,11 @@ test_nccreate(char *path)
     }
 
     /* Initialize in-memory netcdf to empty */
-    add_reset(&test);
+    add_reset(test_g);
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -100,7 +98,7 @@ test_ncopen(char *path)
     static struct cdfatt title       =                    /* attribute */
         {NC_GLOBAL, "title", NC_CHAR, LEN_OF(title_val), (void *)title_val};
 
-    (void)fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
 
     if ((cdfid0 = ncopen(xpath, NC_NOWRITE)) != -1) {
         error("%s: ncopen should fail opening nonexistent file", pname);
@@ -126,7 +124,7 @@ test_ncopen(char *path)
         ncclose(cdfid0);
         return;
     }
-    add_att(&test, NC_GLOBAL, &title); /* keep in-memory netcdf updated */
+    add_att(test_g, NC_GLOBAL, &title); /* keep in-memory netcdf updated */
     if (ncendef(cdfid0) == -1) {
         error("%s: ncendef failed after ncattput", pname);
         ncclose(cdfid0);
@@ -170,9 +168,9 @@ test_ncopen(char *path)
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -201,7 +199,7 @@ test_ncredef(char *path)
     static struct cdfatt aa_units    = /* attribute */
         {___, "units", NC_CHAR, LEN_OF(units_val), (void *)units_val};
 
-    (void)fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
 
     if ((cdfid = ncopen(path, NC_WRITE)) == -1) {
         error("%s: ncopen failed", pname);
@@ -219,7 +217,7 @@ test_ncredef(char *path)
         ncclose(cdfid);
         return;
     }
-    add_dim(&test, &ii); /* keep in-memory netcdf in sync */
+    add_dim(test_g, &ii); /* keep in-memory netcdf in sync */
 
     /* dimension added OK, add a variable */
     aa.dims    = (int *)emalloc(sizeof(int) * aa.ndims);
@@ -229,7 +227,7 @@ test_ncredef(char *path)
         ncclose(cdfid);
         return;
     }
-    add_var(&test, &aa); /* keep in-memory netcdf in sync */
+    add_var(test_g, &aa); /* keep in-memory netcdf in sync */
 
     /* variable added OK, add a variable attribute */
     aa_units.var = aa_id;
@@ -239,7 +237,7 @@ test_ncredef(char *path)
         ncclose(cdfid);
         return;
     }
-    add_att(&test, aa_id, &aa_units); /* keep in-memory netcdf in sync */
+    add_att(test_g, aa_id, &aa_units); /* keep in-memory netcdf in sync */
 
     if (ncredef(cdfid) != -1) {
         error("%s: cdredef in define mode should have failed", pname);
@@ -259,11 +257,11 @@ test_ncredef(char *path)
         error("%s: ncredef failed to report bad cdf handle", pname);
         nerrs++;
     }
-    Free((char *)aa.dims);
+    free(aa.dims);
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -293,7 +291,7 @@ test_ncendef(char *path)
     static struct cdfatt bb_range     =             /* attribute */
         {___, "valid_range", NC_FLOAT, LEN_OF(bb_rangev), (void *)bb_rangev};
 
-    (void)fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
 
     if ((cdfid = ncopen(path, NC_WRITE)) == -1) {
         error("%s: ncopen failed", pname);
@@ -312,8 +310,8 @@ test_ncendef(char *path)
         ncclose(cdfid);
         return;
     }
-    add_dim(&test, &jj); /* keep in-memory netcdf in sync */
-    add_dim(&test, &kk); /* keep in-memory netcdf in sync */
+    add_dim(test_g, &jj); /* keep in-memory netcdf in sync */
+    add_dim(test_g, &kk); /* keep in-memory netcdf in sync */
 
     /* dimensions added OK, add a variable */
     bb.dims    = (int *)emalloc(sizeof(int) * bb.ndims);
@@ -324,7 +322,7 @@ test_ncendef(char *path)
         ncclose(cdfid);
         return;
     }
-    add_var(&test, &bb); /* keep in-memory netcdf in sync */
+    add_var(test_g, &bb); /* keep in-memory netcdf in sync */
 
     /* variable added OK, add a variable attribute */
     if (ncattput(cdfid, bb_id, bb_range.name, bb_range.type, bb_range.len, (void *)bb_range.val) == -1) {
@@ -332,7 +330,7 @@ test_ncendef(char *path)
         ncclose(cdfid);
         return;
     }
-    add_att(&test, bb_id, &bb_range); /* keep in-memory netcdf in sync */
+    add_att(test_g, bb_id, &bb_range); /* keep in-memory netcdf in sync */
 
     if (ncendef(cdfid) == -1) {
         error("%s: ncendef failed", pname);
@@ -355,9 +353,9 @@ test_ncendef(char *path)
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -375,7 +373,7 @@ test_ncclose(char *path)
     static char pname[] = "test_ncclose";
     int         cdfid; /* netcdf id */
 
-    (void)fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
 
     if ((cdfid = ncopen(path, NC_WRITE)) == -1) {
         error("%s: ncopen failed", pname);
@@ -407,9 +405,9 @@ test_ncclose(char *path)
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -450,7 +448,7 @@ test_ncinquire(char *path)
     static struct cdfatt cc_units    = /* attribute */
         {___, "units", NC_CHAR, LEN_OF(units_val), (void *)units_val};
 
-    (void)fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t", &pname[5]);
 
     if ((cdfid = ncopen(path, NC_WRITE)) == -1) {
         error("%s: ncopen failed", pname);
@@ -463,20 +461,20 @@ test_ncinquire(char *path)
         return;
     }
     /* compare returned with expected values */
-    if (ndims != test.ndims) {
-        error("%s: ndims returned as %d, expected %d", pname, ndims, test.ndims);
+    if (ndims != test_g->ndims) {
+        error("%s: ndims returned as %d, expected %d", pname, ndims, test_g->ndims);
         nerrs++;
     }
-    if (nvars != test.nvars) {
-        error("%s: nvars returned as %d, expected %d", pname, nvars, test.nvars);
+    if (nvars != test_g->nvars) {
+        error("%s: nvars returned as %d, expected %d", pname, nvars, test_g->nvars);
         nerrs++;
     }
-    if (ngatts != test.ngatts) {
-        error("%s: ngatts returned as %d, expected %d", pname, ngatts, test.ngatts);
+    if (ngatts != test_g->ngatts) {
+        error("%s: ngatts returned as %d, expected %d", pname, ngatts, test_g->ngatts);
         nerrs++;
     }
-    if (xdimid != test.xdimid) {
-        error("%s: xdimid returned as %d, expected %d", pname, xdimid, test.xdimid);
+    if (xdimid != test_g->xdimid) {
+        error("%s: xdimid returned as %d, expected %d", pname, xdimid, test_g->xdimid);
         nerrs++;
     }
 
@@ -492,7 +490,7 @@ test_ncinquire(char *path)
             ncclose(cdfid);
             return;
         }
-        add_dim(&test, &dims[id]);
+        add_dim(test_g, &dims[id]);
     }
 
     /* add an unlimited dimension */
@@ -501,7 +499,7 @@ test_ncinquire(char *path)
         ncclose(cdfid);
         return;
     }
-    add_dim(&test, &rec);
+    add_dim(test_g, &rec);
 
     /* add some record variables */
     for (iv = 0; iv < nv; iv++) {
@@ -514,7 +512,7 @@ test_ncinquire(char *path)
             ncclose(cdfid);
             return;
         }
-        add_var(&test, &cc[iv]);
+        add_var(test_g, &cc[iv]);
 
         /* add a variable attribute */
         if (ncattput(cdfid, cc_id, cc_units.name, cc_units.type, cc_units.len, (void *)cc_units.val) == -1) {
@@ -522,7 +520,7 @@ test_ncinquire(char *path)
             ncclose(cdfid);
             return;
         }
-        add_att(&test, cc_id, &cc_units);
+        add_att(test_g, cc_id, &cc_units);
     }
     /* try calling from define mode, compare returned values to expected */
     if (ncinquire(cdfid, &ndims, &nvars, &ngatts, &xdimid) == -1) {
@@ -531,20 +529,20 @@ test_ncinquire(char *path)
         return;
     }
     /* compare returned with expected values */
-    if (ndims != test.ndims) {
-        error("%s: ndims returned as %d, expected %d", pname, ndims, test.ndims);
+    if (ndims != test_g->ndims) {
+        error("%s: ndims returned as %d, expected %d", pname, ndims, test_g->ndims);
         nerrs++;
     }
-    if (nvars != test.nvars) {
-        error("%s: nvars returned as %d, expected %d", pname, nvars, test.nvars);
+    if (nvars != test_g->nvars) {
+        error("%s: nvars returned as %d, expected %d", pname, nvars, test_g->nvars);
         nerrs++;
     }
-    if (ngatts != test.ngatts) {
-        error("%s: ngatts returned as %d, expected %d", pname, ngatts, test.ngatts);
+    if (ngatts != test_g->ngatts) {
+        error("%s: ngatts returned as %d, expected %d", pname, ngatts, test_g->ngatts);
         nerrs++;
     }
-    if (xdimid != test.xdimid) {
-        error("%s: xdimid returned as %d, expected %d", pname, xdimid, test.xdimid);
+    if (xdimid != test_g->xdimid) {
+        error("%s: xdimid returned as %d, expected %d", pname, xdimid, test_g->xdimid);
         nerrs++;
     }
 
@@ -564,9 +562,9 @@ test_ncinquire(char *path)
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -593,7 +591,7 @@ test_ncsync(char *path)
     static struct cdfatt dd_fill_val    = /* attribute */
         {___, "fill_value", NC_SHORT, LEN_OF(dd_fill_valv), (void *)dd_fill_valv};
 
-    (void)fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
 
     if ((cdfid0 = ncopen(path, NC_WRITE)) == -1) {
         error("%s: ncopen in NC_WRITE mode failed", pname);
@@ -612,7 +610,7 @@ test_ncsync(char *path)
         ncclose(cdfid0);
         return;
     }
-    add_dim(&test, &ll);
+    add_dim(test_g, &ll);
 
     dd.dims    = (int *)emalloc(sizeof(int) * dd.ndims);
     dd.dims[0] = ll_dim;
@@ -621,7 +619,7 @@ test_ncsync(char *path)
         ncclose(cdfid0);
         return;
     }
-    add_var(&test, &dd);
+    add_var(test_g, &dd);
 
     if (ncattput(cdfid0, dd_id, dd_fill_val.name, dd_fill_val.type, dd_fill_val.len,
                  (void *)dd_fill_val.val) == -1) {
@@ -629,7 +627,7 @@ test_ncsync(char *path)
         ncclose(cdfid0);
         return;
     }
-    add_att(&test, dd_id, &dd_fill_val);
+    add_att(test_g, dd_id, &dd_fill_val);
 
     if (ncsync(cdfid0) != -1) {
         error("%s: ncsync in define mode should fail", pname);
@@ -659,7 +657,7 @@ test_ncsync(char *path)
             ncclose(cdfid0);
             return;
         }
-        add_data(&test, dd_id, dd_start, dd_edges); /* keep test in sync */
+        add_data(test_g, dd_id, dd_start, dd_edges); /* keep test in sync */
         if (ncsync(cdfid0) == -1) {
             error("%s: ncsync after putting data failed", pname);
             nerrs++;
@@ -696,9 +694,9 @@ test_ncsync(char *path)
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }
 
 /*
@@ -720,7 +718,7 @@ test_ncabort(char *path)
         {___, "temp", NC_SHORT, LEN_OF(attv), (void *)attv};
     int cdfid; /* netcdf id */
 
-    (void)fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
+    fprintf(stderr, "*** Testing %s ...\t\t", &pname[5]);
 
     if ((cdfid = ncopen(path, NC_WRITE)) == -1) {
         error("%s: ncopen failed", pname);
@@ -779,7 +777,7 @@ test_ncabort(char *path)
         nerrs++;
     }
     if (nerrs > 0)
-        (void)fprintf(stderr, "FAILED! ***\n");
+        fprintf(stderr, "FAILED! ***\n");
     else
-        (void)fprintf(stderr, "ok ***\n");
+        fprintf(stderr, "ok ***\n");
 }

@@ -14,6 +14,8 @@
 #ifndef H4_TUTILS_H
 #define H4_TUTILS_H
 
+#include "hdfi.h"
+
 /* Define these for use in all the tests */
 #ifndef TESTMASTER
 extern
@@ -134,7 +136,7 @@ extern
         if (Verbosity > 9)                                                                                   \
             printf("   Call to HDF routine: %15s at line %4d in %s had value %s \n", where, (int)__LINE__,   \
                    __FILE__, x);                                                                             \
-        if (HDstrcmp(x, val) != 0) {                                                                         \
+        if (strcmp(x, val) != 0) {                                                                           \
             printf("*** UNEXPECTED VALUE from %s is %s at line %4d in %s\n", where, x, (int)__LINE__,        \
                    __FILE__);                                                                                \
             num_errs++;                                                                                      \
@@ -148,7 +150,7 @@ extern
         if (Verbosity > 9)                                                                                   \
             printf("   Call to HDF routine: %15s at line %4d in %s had value %s \n", where, (int)__LINE__,   \
                    __FILE__, x);                                                                             \
-        if (HDstrncmp(x, val, HDstrlen(val)) != 0) {                                                         \
+        if (strncmp(x, val, strlen(val)) != 0) {                                                             \
             printf("*** UNEXPECTED VALUE from %s is %s at line %4d in %s\n", where, x, (int)__LINE__,        \
                    __FILE__);                                                                                \
             num_errs++;                                                                                      \
@@ -210,12 +212,14 @@ extern
 
 #define ABS(x) ((int)(x) < 0 ? (-x) : x)
 
+/* Just return the srcdir path */
+const char *get_srcdir(void);
+
+/* Append the test file name to the srcdir path and return the whole string */
+const char *get_srcdir_filename(const char *filename);
+
 intn fuzzy_memcmp(const void *s1, const void *s2, int32 len, intn fuzz_factor);
 void print_mismatched(const void *s1, const void *s2, int32 size2cmp);
-
-/* Generate the correct name for the test file, by prepending the source path
-   if it exists, otherwise, assume it is the local directory */
-intn make_datafilename(char *basename, char *testfile, unsigned int size);
 
 /* System command to use for Cleanup */
 #if defined _WIN32

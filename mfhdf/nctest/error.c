@@ -3,15 +3,11 @@
  *   See netcdf/COPYRIGHT file for copying and redistribution conditions.
  *********************************************************************/
 
+#include <stdarg.h>
 #include <stdio.h>
 
-#ifndef NO_STDARG
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include "hdf.h"
 
-#include "h4config.h"
 #ifdef H4_HAVE_NETCDF
 #include "netcdf.h"
 #else
@@ -30,13 +26,13 @@ error(const char *fmt, ...)
 {
     va_list args;
 
-    (void)fprintf(stderr, "*** ");
+    fprintf(stderr, "*** ");
 
     va_start(args, fmt);
     (void)vfprintf(stderr, fmt, args);
     va_end(args);
 
-    (void)fprintf(stderr, "\n");
+    fprintf(stderr, "\n");
     error_count++;
 }
 

@@ -24,7 +24,8 @@
 
 #define BUF_SIZE 4096
 
-static uint8 outbuf[BUF_SIZE], inbuf[BUF_SIZE];
+static uint8 *outbuf = NULL;
+static uint8 *inbuf  = NULL;
 
 void
 test_hextelt(void)
@@ -39,6 +40,12 @@ test_hextelt(void)
     intn   errflag = 0;
     intn   errors  = 0;
 
+    outbuf = (uint8 *)calloc(BUF_SIZE, sizeof(uint8));
+    inbuf  = (uint8 *)calloc(BUF_SIZE, sizeof(uint8));
+
+    CHECK_ALLOC(outbuf, "outbuf", "test_hextelt");
+    CHECK_ALLOC(inbuf, "outbuf", "test_hextelt");
+
     /* Initialize buffer */
     for (i = 0; i < BUF_SIZE; i++)
         outbuf[i] = (char)(i % 256);
@@ -50,8 +57,8 @@ test_hextelt(void)
     CHECK_VOID(fid, FAIL, "Hopen");
 
     /* Write first object to header file */
-    MESSAGE(5, printf("Writing object(%lu bytes) into base file\n", (unsigned long)HDstrlen(STRING2)););
-    ret = Hputelement(fid, (uint16)1000, (uint16)1, (const uint8 *)STRING2, (int32)HDstrlen(STRING2) + 1);
+    MESSAGE(5, printf("Writing object(%lu bytes) into base file\n", (unsigned long)strlen(STRING2)););
+    ret = Hputelement(fid, (uint16)1000, (uint16)1, (const uint8 *)STRING2, (int32)strlen(STRING2) + 1);
     CHECK_VOID(ret, FAIL, "Hputelement");
 
     /* Promote the above object to an external object */
@@ -59,14 +66,14 @@ test_hextelt(void)
     aid1 = HXcreate(fid, 1000, 1, "t1.hdf", (int32)0, (int32)0);
     CHECK_VOID(aid1, FAIL, "HXcreate");
 
-    ret = Hseek(aid1, (int32)HDstrlen("element 1000 1") + 1, DF_START);
+    ret = Hseek(aid1, (int32)strlen("element 1000 1") + 1, DF_START);
     CHECK_VOID(ret, FAIL, "Hseek");
 
     /* Now verify that the new promoted object can be written to */
     MESSAGE(5, printf("Writing to promoted object now in file #1 \n"););
 
-    ret = Hwrite(aid1, (int32)HDstrlen("correct") + 1, "correct");
-    if (ret != (int32)HDstrlen("correct") + 1) {
+    ret = Hwrite(aid1, (int32)strlen("correct") + 1, "correct");
+    if (ret != (int32)strlen("correct") + 1) {
         fprintf(stderr, "Hwrite failed (code %d)\n", (int)ret);
         HEprint(stderr, 0);
         errors++;
@@ -92,10 +99,9 @@ test_hextelt(void)
     aid1 = HXcreate(fid, 1000, 2, "t3.hdf", (int32)0, (int32)0);
     CHECK_VOID(aid1, FAIL, "HXcreate");
 
-    MESSAGE(5,
-            printf("Writing string '%s'(%lu bytes) to file #3\n", STRING, (unsigned long)HDstrlen(STRING)););
-    ret = Hwrite(aid1, (int32)HDstrlen(STRING) + 1, STRING);
-    if (ret != (int32)HDstrlen(STRING) + 1) {
+    MESSAGE(5, printf("Writing string '%s'(%lu bytes) to file #3\n", STRING, (unsigned long)strlen(STRING)););
+    ret = Hwrite(aid1, (int32)strlen(STRING) + 1, STRING);
+    if (ret != (int32)strlen(STRING) + 1) {
         fprintf(stderr, "Hwrite failed (code %d)\n", (int)ret);
         HEprint(stderr, 0);
         errors++;
@@ -157,7 +163,7 @@ test_hextelt(void)
     }
 
     MESSAGE(5, printf("Verifying data(%d bytes) in external element in file #1\n", (int)ret););
-    if (HDstrcmp((const char *)inbuf, (const char *)STRING3)) {
+    if (strcmp((const char *)inbuf, (const char *)STRING3)) {
         fprintf(stderr, "Error: Object stored in file #1 is wrong\n");
         fprintf(stderr, "\t       Is: %s\n", (char *)inbuf);
         fprintf(stderr, "\tShould be: %s\n", STRING3);
@@ -251,7 +257,7 @@ test_hextelt(void)
     }
 
     MESSAGE(5, printf("Verifying data(%d bytes) in whole external element in file #3\n", (int)ret););
-    if (HDstrcmp((const char *)inbuf, (const char *)STRING)) {
+    if (strcmp((const char *)inbuf, (const char *)STRING)) {
         fprintf(stderr, "Error: Object stored in file #3 is wrong\n");
         fprintf(stderr, "\t       is: %s\n", (char *)inbuf);
         fprintf(stderr, "\tShould be: %s\n", STRING);
@@ -390,6 +396,9 @@ test_hextelt(void)
     CHECK_VOID(ret, FAIL, "HXsetcreatedir");
     ret = HXsetdir(NULL);
     CHECK_VOID(ret, FAIL, "HXsetdir");
+
+    free(outbuf);
+    free(inbuf);
 
     num_errs += errors; /* increment global error count */
 }

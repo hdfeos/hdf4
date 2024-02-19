@@ -102,29 +102,27 @@ test_vglongnames(void)
     status = Vgetnamelen(vg1, &name_len);
     CHECK_VOID(status, FAIL, "Vgetnamelen");
 
-    vgname = (char *)HDmalloc(sizeof(char *) * (name_len + 1));
+    vgname = (char *)malloc(sizeof(char) * (name_len + 1));
     CHECK_ALLOC(vgname, "vgname", "test_vglongnames");
 
     status = Vgetname(vg1, vgname);
     CHECK_VOID(status, FAIL, "VSgetname");
     VERIFY_CHAR_VOID(vgname, VG_LONGNAME, "Vgetname");
 
-    if (vgname != NULL)
-        HDfree(vgname);
+    free(vgname);
 
     /* get the vgroup's class */
     status = Vgetclassnamelen(vg1, &name_len);
     CHECK_VOID(status, FAIL, "Vgetnamelen");
 
-    vgclass = (char *)HDmalloc(sizeof(char *) * (name_len + 1));
+    vgclass = (char *)malloc(sizeof(char) * (name_len + 1));
     CHECK_ALLOC(vgclass, "vgclass", "test_vglongnames");
 
     status = Vgetclass(vg1, vgclass);
     CHECK_VOID(status, FAIL, "VSgetclass");
     VERIFY_CHAR_VOID(vgclass, VG_LONGCLASS, "Vgetclass");
 
-    if (vgclass != NULL)
-        HDfree(vgclass);
+    free(vgclass);
 
     status = Vdetach(vg1);
     CHECK_VOID(status, FAIL, "Vdetach");
@@ -140,37 +138,35 @@ test_vglongnames(void)
     status = Vgetnamelen(vg1, &name_len);
     CHECK_VOID(status, FAIL, "Vgetnamelen");
 
-    vgname = (char *)HDmalloc(sizeof(char *) * (name_len + 1));
+    vgname = (char *)malloc(sizeof(char) * (name_len + 1));
     CHECK_ALLOC(vgname, "vgname", "test_vglongnames");
 
     status = Vgetname(vg1, vgname);
     CHECK_VOID(status, FAIL, "VSgetname");
 
-    if (HDstrcmp(vgname, VGROUP1)) {
+    if (strcmp(vgname, VGROUP1)) {
         num_errs++;
         printf(">>> Got bogus Vgroup name : %s\n", vgname);
     }
 
-    if (vgname != NULL)
-        HDfree(vgname);
+    free(vgname);
 
     /* get the vgroup's class */
     status = Vgetclassnamelen(vg1, &name_len);
     CHECK_VOID(status, FAIL, "Vgetnamelen");
 
-    vgclass = (char *)HDmalloc(sizeof(char *) * (name_len + 1));
+    vgclass = (char *)malloc(sizeof(char) * (name_len + 1));
     CHECK_ALLOC(vgclass, "vgclass", "test_vglongnames");
 
     status = Vgetclass(vg1, vgclass);
     CHECK_VOID(status, FAIL, "VSgetclass");
 
-    if (HDstrcmp(vgclass, VG_LONGCLASS)) {
+    if (strcmp(vgclass, VG_LONGCLASS)) {
         num_errs++;
         printf(">>> Got bogus Vgroup class : %s\n", vgclass);
     }
 
-    if (vgclass != NULL)
-        HDfree(vgclass);
+    free(vgclass);
 
     status = Vdetach(vg1);
     CHECK_VOID(status, FAIL, "Vdetach");
@@ -253,7 +249,7 @@ test_undefined(void)
        This shows that bug HDFFR-1288 is fixed. */
     status = Vgetclass(vg1, vgclass);
     CHECK_VOID(status, FAIL, "Vgetclass");
-    VERIFY_VOID(HDstrlen(vgclass), 0, "VSgetclass");
+    VERIFY_VOID(strlen(vgclass), 0, "VSgetclass");
 
     /* The length of the class name should be 0 */
     status = Vgetclassnamelen(vg1, &name_len);
@@ -274,7 +270,7 @@ test_undefined(void)
        Similar to class name in bug HDFFR-1288. */
     status = Vgetname(vg1, vgname);
     CHECK_VOID(status, FAIL, "Vgetname");
-    VERIFY_VOID(HDstrlen(vgname), 0, "VSgetname");
+    VERIFY_VOID(strlen(vgname), 0, "VSgetname");
 
     /* The length of the name should be 0 */
     status = Vgetnamelen(vg1, &name_len);
@@ -304,50 +300,42 @@ test_undefined(void)
 static void
 test_vgisinternal()
 {
-    int32 fid, vgroup_id;
-    intn  is_internal = FALSE;
-    int32 vref        = -1;
-    intn  ii, status;
-    char  testfile[H4_MAX_NC_NAME] = "";
-    char  internal_array2[2]       = {TRUE, TRUE};
+    int32       fid, vgroup_id;
+    intn        is_internal = FALSE;
+    int32       vref        = -1;
+    intn        ii, status;
+    const char *testfile           = get_srcdir_filename(GR_FILE);
+    char        internal_array2[2] = {TRUE, TRUE};
 
     /* Use a GR file to test Vgisinternal on internal vgroups */
 
-    /* The file GR_FILE is an existing file in the test_files directory,
-       make_datafilename builds the file name with correct path */
-    if (make_datafilename(GR_FILE, testfile, H4_MAX_NC_NAME) != FAIL) {
-        /* Open the old GR file and initialize the V interface */
-        fid = Hopen(testfile, DFACC_READ, 0);
-        CHECK_VOID(fid, FAIL, "Hopen: grtdfui83.hdf");
-        status = Vstart(fid);
-        CHECK_VOID(status, FAIL, "Vstart");
+    /* Open the old GR file and initialize the V interface */
+    fid = Hopen(testfile, DFACC_READ, 0);
+    CHECK_VOID(fid, FAIL, "Hopen: grtdfui83.hdf");
+    status = Vstart(fid);
+    CHECK_VOID(status, FAIL, "Vstart");
 
-        ii = 0;
-        while ((vref = Vgetid(fid, vref)) != FAIL) { /* until no more vgroups */
-            vgroup_id = Vattach(fid, vref, "r");     /* attach to vgroup */
+    ii = 0;
+    while ((vref = Vgetid(fid, vref)) != FAIL) { /* until no more vgroups */
+        vgroup_id = Vattach(fid, vref, "r");     /* attach to vgroup */
 
-            /* Test that the current vgroup is or is not internal as specified
-               in the array internal_array2 */
-            is_internal = Vgisinternal(vgroup_id);
-            CHECK_VOID(is_internal, FAIL, "Vgisinternal");
-            VERIFY_VOID(is_internal, internal_array2[ii], "Vgisinternal");
+        /* Test that the current vgroup is or is not internal as specified
+           in the array internal_array2 */
+        is_internal = Vgisinternal(vgroup_id);
+        CHECK_VOID(is_internal, FAIL, "Vgisinternal");
+        VERIFY_VOID(is_internal, internal_array2[ii], "Vgisinternal");
 
-            status = Vdetach(vgroup_id);
-            CHECK_VOID(status, FAIL, "Vdetach");
+        status = Vdetach(vgroup_id);
+        CHECK_VOID(status, FAIL, "Vdetach");
 
-            ii++; /* increment vgroup index */
-        }
-
-        /* Terminate access to the V interface and close the file */
-        status = Vend(fid);
-        CHECK_VOID(status, FAIL, "Vend");
-        status = Hclose(fid);
-        CHECK_VOID(status, FAIL, "Hclose");
+        ii++; /* increment vgroup index */
     }
-    else {
-        fprintf(stderr, "ERROR>>> Unable to make filename for %s\n", GR_FILE);
-        H4_FAILED()
-    }
+
+    /* Terminate access to the V interface and close the file */
+    status = Vend(fid);
+    CHECK_VOID(status, FAIL, "Vend");
+    status = Hclose(fid);
+    CHECK_VOID(status, FAIL, "Hclose");
 } /* test_vgisinternal */
 
 void

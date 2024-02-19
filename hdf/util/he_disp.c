@@ -111,10 +111,9 @@ getSpace(void)
         oldx = xdim;
         oldy = ydim;
 
-        if (wheresmall)
-            HDfree(wheresmall);
+        free(wheresmall);
 
-        if (NULL == (wheresmall = (uint8 *)HDmalloc((size_t)(xdim * ydim)))) {
+        if (NULL == (wheresmall = (uint8 *)malloc((size_t)(xdim * ydim)))) {
             printf(" Cannot allocate memory, fatal error\n");
             exit(1);
         }
@@ -211,7 +210,7 @@ rImage(int usepal)
      *  If a palette should be used, send it with the M command.
      */
     if (usepal) {
-        (void)printf("\033^M;0;256;768;rseq^"); /* start map */
+        printf("\033^M;0;256;768;rseq^"); /* start map */
 
         thischar = (int8 *)rgb;
         for (j = 0; j < 768; j++) {
@@ -230,14 +229,14 @@ rImage(int usepal)
      *  Send the data for the image with RLE encoding for efficiency.
      *  Encode each line and send it.
      */
-    space    = (int8 *)HDmalloc(ydim + 128);
+    space    = (int8 *)malloc(ydim + 128);
     thisline = (int8 *)wheresmall;
 
     for (i = 0; i < ydim; i++) {
         newxsize = rleIt((char *)thisline, (char *)space, (int)xdim);
         thisline += xdim; /* increment to next line */
 
-        (void)printf("\033^R;0;%d;%d;%d;rseq^", i * factor, factor, newxsize);
+        printf("\033^R;0;%d;%d;%d;rseq^", i * factor, factor, newxsize);
 
         thischar = space;
         for (j = 0; j < newxsize; j++) {
@@ -271,7 +270,7 @@ rImage(int usepal)
      *  pause for the user
      */
 
-    HDfree(space);
+    free(space);
     return HE_OK;
 }
 
@@ -295,7 +294,7 @@ bigImg(unsigned char *targ, unsigned char *src)
                 *q++ = *p;
 
         for (i = 1; i < factor; i++) {
-            HDmemcpy(q, oldq, xsize); /* make one copy of the line */
+            memcpy(q, oldq, xsize); /* make one copy of the line */
             q += xsize;
         }
     }

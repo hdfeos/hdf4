@@ -17,7 +17,14 @@
 
 #include "tproto.h"
 #include "hfile.h"
-#define BIG            600
+
+/* This value can cause platform-specific problems as the number of files
+ * that can be open at one time via fopen() is often capped by the OS.
+ *
+ * The current value doesn't seem to cause problems on any platform.
+ */
+#define BIG 127
+
 #define TESTFILE_NAME  "thf"
 #define TESTREF_NAME   "tref.hdf"
 #define MAX_REF_TESTED MAX_REF
@@ -33,19 +40,31 @@ test_file_limits(void)
     int   i;
     int32 ret;
 
+#ifdef H4_HAVE_WIN32_API
+    /* Windows can only have 512 stdio files open by default, so we need
+     * to bump this to handle large values for BIG files open at once.
+     *
+     * Technically no longer necessary since BIG was adjusted to < 512, but
+     * worth keeping around in case we need to set this in the future.
+     */
+    ret = _setmaxstdio(1024);
+    CHECK_VOID(ret, FAIL, "_setmaxstdio");
+#endif
+
     MESSAGE(5, puts("Opening many files of same name"););
     for (i = 0; i < BIG; i++) {
         files[i] = Hopen("thf.hdf", DFACC_RDWR, 0);
+        CHECK_VOID(files[i], FAIL, "Hopen");
         if (files[i] < 0) {
-            /*            i++; */
             break;
-        } /* end if */
+        }
     }
     MESSAGE(5, printf("Opening stopped at %d/%d files\n", i, BIG););
 
     MESSAGE(5, puts("Closing all files"););
     for (i--; i >= 0; i--) {
         ret = Hclose(files[i]);
+        CHECK_VOID(ret, FAIL, "Hclose");
         if (ret < 0)
             printf("Error closing file %d\n", i);
     }
@@ -56,16 +75,17 @@ test_file_limits(void)
         char fname[100];
         sprintf(fname, "%s%1d.hdf", TESTFILE_NAME, i);
         files[i] = Hopen(fname, DFACC_ALL, 0);
+        CHECK_VOID(files[i], FAIL, "Hopen");
         if (files[i] < 0) {
-            /*            i++; */
             break;
-        } /* end if */
+        }
     }
     MESSAGE(5, printf("Opening stopped at %d/%d files\n", i, BIG););
 
     MESSAGE(5, puts("Closing all files except first open"););
     for (i--; i > 0; i--) {
         ret = Hclose(files[i]);
+        CHECK_VOID(ret, FAIL, "Hclose");
         if (ret < 0)
             printf("Error closing file %d\n", i);
     }
@@ -73,7 +93,8 @@ test_file_limits(void)
 
     MESSAGE(5, puts("Opening write access elements"););
     for (i = 0; i < BIG; i++) {
-        accs[i] = Hstartwrite(files[0], (uint16)100, (uint16)i, 100L);
+        accs[i] = Hstartwrite(files[0], (uint16)100, (uint16)(i + 1), 100L);
+        CHECK_VOID(accs[i], FAIL, "Hstartwrite");
         if (accs[i] < 0)
             break;
     }
@@ -82,12 +103,14 @@ test_file_limits(void)
     MESSAGE(5, puts("Closing access elements"););
     for (i--; i >= 0; i--) {
         ret = Hendaccess(accs[i]);
+        CHECK_VOID(ret, FAIL, "Hendaccess");
         if (ret < 0)
             printf("Error ending access %d\n", i);
     }
     MESSAGE(5, puts("Ended access"););
 
     ret = Hclose(files[0]);
+    CHECK_VOID(ret, FAIL, "Hclose");
 } /* end test_file_limits() */
 
 #define TAG1 ((uint16)1000)

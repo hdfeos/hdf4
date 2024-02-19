@@ -9,47 +9,27 @@
 extern char *progname; /* for error messages */
 extern char *cdlname;  /* for error messages */
 
-#undef PROTO
-#ifndef NO_HAVE_PROTOTYPES
-#define PROTO(x) x
-#else
-#define PROTO(x) ()
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef NO_STDARG
-extern void derror(const char *fmt, ...);
-#else
-extern void derror();
-#endif
+extern void  derror(const char *fmt, ...);
+extern void *emalloc(size_t size);
+extern void *erealloc(void *ptr, size_t size);
+extern void  usage(void);
 
-/*
-extern void	derror		PROTO((
-                                       char *fmt,
-                                       ...
-                                       ));
-*/
+extern void yyerror(char *);
+extern int  yyparse(void);
 
-extern void *emalloc  PROTO((int size));
-extern void *erealloc PROTO((void *ptr, int size));
-extern void usage     PROTO((void));
-
-extern void yyerror PROTO((char *));
-
-extern int yyparse PROTO((void));
-
-extern void put_variable PROTO((void *));
+extern void put_variable(void *);
 
 /* generate.c */
 void        cline(const char *stmnt);
 void        fline(const char *stmnt);
 const char *nctype(nc_type);
 const char *ncctype(nc_type);
-char       *cstrstr(char *, long);
-char       *fstrstr(char *, long);
+char       *cstrstr(char *, size_t);
+char       *fstrstr(char *, size_t);
 char       *fstring(nc_type, void *, int);
 void        define_netcdf(char *netcdfname);
 
