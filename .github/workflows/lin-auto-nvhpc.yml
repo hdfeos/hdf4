@@ -1,4 +1,4 @@
-name: lin nvhpc auto
+name: lin auto nvhpc
 
 on:
   workflow_dispatch:
