@@ -1,6 +1,8 @@
-name: arm64 auto f j
+name: auto
 
-on: [push, pull_request]
+on:
+  push:
+    branches: master
 
 jobs:
   test: # make sure the action works on a clean machine without building
@@ -11,10 +13,13 @@ jobs:
       matrix:
         os:
           - name: openbsd
-            architecture: arm64
+            architecture: x86_64
             version: '7.4'
             host: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: ${{ matrix.os.name }}
         uses: cross-platform-actions/action@v0.22.0
         env:
@@ -28,18 +33,14 @@ jobs:
           shell: bash
           run: |
             sudo pkg_add git
-            sudo pkg_add autoconf-2.71 automake-1.16.5 libtool
-            sudo pkg_add jpeg
-            sudo pkg_add jdk-17.0.8.7.1p0v0
-            sudo pkg_add g95-11.2.0p9
-            export FC=/usr/local/bin/egfortran
-            export PATH=/usr/local/jdk-17/bin/:$PATH
+            sudo pkg_add autoconf-2.71
+            sudo pkg_add automake-1.16.5
+            sudo pkg_add libtool-2.4.2p2
             git clone https://github.com/hdfeos/hdf4
             cd hdf4
             export AUTOCONF_VERSION=2.71
             export AUTOMAKE_VERSION=1.16
-            autoreconf -fvi
-            ./configure F77=/usr/local/bin/egfortran --enable-fortran --enable-java
+            ./autogen.sh
+            ./configure
             make
             make check
-            sudo make install
