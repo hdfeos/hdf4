@@ -1,4 +1,4 @@
-name: lin auto nvhpc
+name: lin auto nvhpc f sh
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
           export LD_LIBRARY_PATH=/opt/nvidia/hpc_sdk/Linux_x86_64/23.9/cuda/12.2/lib64:/opt/nvidia/hpc_sdk/Linux_x86_64/23.9/compilers/lib
           export PATH=/opt/nvidia/hpc_sdk/Linux_x86_64/23.9/comm_libs/openmpi4/bin:/opt/nvidia/hpc_sdk/Linux_x86_64/23.9/compilers/bin:$PATH
           ./autogen.sh
-          ./configure --prefix=/tmp  --disable-shared
+          ./configure --prefix=/tmp  --enable-fortran --enable-shared
           make -j
           make check -j
           make install

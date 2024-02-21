@@ -28,14 +28,16 @@ jobs:
           shell: bash
           run: |
             sudo pkg_add git
-            sudo pkg_add autoconf automake libtool
+            sudo pkg_add autoconf-2.71 automake-1.16.5 libtool	    
             sudo pkg_add jpeg
             sudo pkg_add jdk-17.0.8.7.1p0v0
             export PATH=/usr/local/jdk-17/bin/:$PATH
             git clone https://github.com/hdfeos/hdf4
             cd hdf4
+            export AUTOCONF_VERSION=2.71
+            export AUTOMAKE_VERSION=1.16
             autoreconf -fvi
-            ./configure --enable-fortran --enable-java
+            ./configure F77=/usr/local/bin/egfortran --enable-fortran --enable-java
             make
             make check
             sudo make install
