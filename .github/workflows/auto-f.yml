@@ -2,7 +2,7 @@ name: auto f
 
 on:
   push:
-    branches: main
+    branches: master
 
 jobs:
   test: # make sure the action works on a clean machine without building
@@ -36,12 +36,13 @@ jobs:
             sudo pkg_add autoconf-2.71
             sudo pkg_add automake-1.16.5
             sudo pkg_add libtool-2.4.2p2
+            sudo pkg_add jpeg
             export FC=/usr/local/bin/egfortran
             git clone https://github.com/hdfeos/hdf4
             cd hdf4
             export AUTOCONF_VERSION=2.71
             export AUTOMAKE_VERSION=1.16
             ./autogen.sh
-            ./configure F77=/usr/local/bin/egfortran --enable-fortran
+            ./configure F77=/usr/local/bin/egfortran --with-jpeg=/usr/local --enable-fortran
             make
             make check
