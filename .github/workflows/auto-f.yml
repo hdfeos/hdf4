@@ -43,6 +43,6 @@ jobs:
             export AUTOCONF_VERSION=2.71
             export AUTOMAKE_VERSION=1.16
             ./autogen.sh
-            ./configure F77=/usr/local/bin/egfortran --with-jpeg=/usr/local --enable-fortran
+            ./configure F77=/usr/local/bin/egfortran --with-jpeg=/usr/local --enable-fortran --disable-shared
             make
             make check
