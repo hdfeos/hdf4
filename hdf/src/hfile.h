@@ -11,22 +11,26 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*
- **  hbitio.h
- **
- **  Data structures and macros for bitfile access to HDF data objects.
- **  These are mainly used for compression I/O and N-bit data objects.
+/*  hfile.h
+ *  Header for hfile.c, routines for low level data element I/O
  */
 
-#ifndef H4_HBITIO_H
-#define H4_HBITIO_H
+#ifndef H4_HFILE_H
+#define H4_HFILE_H
 
 #include "hdf.h"
 
-/* Macro to define the number of bits cached in the 'bits' variable */
-#define BITNUM (sizeof(uint8) * 8)
+/* ----------------------------- Version Tags ----------------------------- */
+/* Library version numbers */
 
-/* Function-like Macros */
-#define Hputbit(bitid, bit) ((Hbitwrite(bitid, 1, (uint32)bit) == FAIL) ? FAIL : SUCCEED)
+#define LIBVER_MAJOR      4
+#define LIBVER_MINOR      3
+#define LIBVER_RELEASE    0
+#define LIBVER_SUBRELEASE "1" /* For pre-releases like snap0 */
+                              /* Empty string for real releases */
+#define LIBVER_STRING "HDF Version 4.3 Release 0-1, February 5, 2024"
+#define LIBVSTR_LEN   80 /* Length of version string */
+#define LIBVER_LEN    92 /* 4+4+4+80 = 92 */
+/* end of version tags */
 
-#endif /* H4_HBITIO_H */
+#endif /* H4_HFILE_H */

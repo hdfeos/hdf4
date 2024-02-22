@@ -144,7 +144,6 @@ New features and changes
         crle.h
         cskphuff.h
         cszip.h
-        df.h
         dfan.h
         dfgr.h
         dfrig.h
@@ -163,6 +162,39 @@ New features and changes
         mfgri.h
         mstdio.h
         tbbt.h
+
+    - Most of hbitio.h moved to hbitio_priv.h
+
+      Still in hbitio.h:
+
+      * BITNUM #define
+      * Hputbit() function-like macro
+
+      These are referenced in older versions of the reference manual, e.g., in
+      the Hendbitaccess() entry.
+
+      Moved to hbitio_priv.h:
+
+      * BITBUF_SIZE, DATANUM #defines
+      * bitrec_t struct
+      * maskc and maskl variable declarations
+
+    - Most of hfile.h moved to hfile_priv.h
+
+      Still in hfile.h:
+
+      LIBVER_MAJOR
+      LIBVER_MINOR
+      LIBVER_RELEASE
+      LIBVER_SUBRELEASE
+      LIBVER_STRING
+      LIBVSTR_LEN
+      LIBVER_LEN
+
+      Everything else has been moved to hfile_priv.h
+
+      NOTE that hfile.h is NOT included via hdf.h and must be included
+      separately, which is the same behavior as HDF 4.2.x.
 
     - hdfi.h is no longer included by hdf.h
 
