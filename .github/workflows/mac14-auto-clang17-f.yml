@@ -14,6 +14,8 @@ jobs:
         run: |
           brew install autoconf automake jpeg libaec libtool llvm
           brew reinstall gfortran
+      - name: Get Sources
+        uses: actions/checkout@v4.1.1
       - name: Test HDF4
         run: |
           export PATH=/opt/homebrew/opt/llvm/bin:$PATH
@@ -23,11 +25,9 @@ jobs:
           export FC=/opt/homebrew/bin/gfortran
           echo $FC
           brew info jpeg
-          git clone https://github.com/hdfeos/hdf4
-          cd hdf4
           ./autogen.sh
           ./configure --prefix=/tmp --enable-fortran --with-jpeg=/opt/homebrew/opt/jpeg
           make -j
           make check -j
           make install
-          make uninstall	  
+          make uninstall
