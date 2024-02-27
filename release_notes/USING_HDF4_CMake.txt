@@ -39,8 +39,7 @@ I. Preconditions
 
    1. We suggest you obtain the latest CMake for your platform from the Kitware
       web site. The HDF 4.3.x product requires a minimum CMake version
-      of 3.12. If you are using VS2019, the minimum version is 3.15. If you are
-      using VS2022, the minimum version is 3.21.
+      of 3.18. If you are using VS2022, the minimum CMake version is 3.21.
 
    2. You have installed the HDF4 library built with CMake, by executing
       the HDF Install Utility (the *.msi file in the binary package for
@@ -195,7 +194,7 @@ Given the preconditions in section I, create a CMakeLists.txt file at the
 source root. Include the following text in the file:
 
 ##########################################################
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.18)
 project (HDF4MyApp C)
 
 set (LIB_TYPE STATIC) # or SHARED
@@ -230,8 +229,8 @@ command line and the build folder is created as a sub-folder. Windows should
 adjust the forward slash to double backslashes, except for the HDF_DIR
 environment variable.
 
-NOTE: this file is available at the HDF web site:
-    https://portal.hdfgroup.org/display/support/Building+HDF4+with+CMake
+NOTE: this file is available in the HDF4 repository:
+    https://github.com/HDFGroup/hdf4/blob/master/release_notes/USING_HDF4_CMake.txt
 
     HDF4_Examples.cmake
     HDF4_Examples_options.cmake

@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.18)
 PROJECT (ZLIB C)
 
 #-----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ endif ()
 target_include_directories(${ZLIB_LIB_TARGET} PRIVATE "${CMAKE_BINARY_DIR}")
 TARGET_C_PROPERTIES (${ZLIB_LIB_TARGET} STATIC)
 target_link_libraries (${ZLIB_LIB_TARGET} PRIVATE ${LINK_LIBS})
-H4_SET_LIB_OPTIONS (${ZLIB_LIB_TARGET} ${ZLIB_LIB_NAME} STATIC)
+H4_SET_LIB_OPTIONS (${ZLIB_LIB_TARGET} ${ZLIB_LIB_NAME} STATIC 0)
 set_target_properties(${ZLIB_LIB_TARGET} PROPERTIES
     PUBLIC_HEADER ""
     LINKER_LANGUAGE C

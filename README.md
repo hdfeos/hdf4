@@ -4,7 +4,8 @@ HDF version 4.3.0-1 currently under development
 
 [![master build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf4/main.yml?branch=master&label=master)](https://github.com/HDFGroup/hdf4/actions?query=branch%3Amaster)
 [![HDF-EOS build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf4/hdfeos2.yml?branch=master&label=HDF-EOS)](https://github.com/HDFGroup/hdf4/actions?query=branch%3Amaster)
-[![BSD](https://img.shields.io/badge/License-BSD-blue.svg)](https://github.com/HDFGroup/hdf4/blob/develop/COPYING)
+[![netCDF build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf4/netcdf.yml?branch=master&label=netCDF)](https://github.com/HDFGroup/hdf4/actions?query=branch%3Amaster)
+[![BSD](https://img.shields.io/badge/License-BSD-blue.svg)](https://github.com/HDFGroup/hdf4/blob/master/COPYING)
 
 DOCUMENTATION
 -------------
@@ -57,7 +58,7 @@ are tentative.
 | Release | New Features |
 | ------- | ------------ |
 | 4.3.0 | Remove XDR, Stop deploying internal header files |
-| 4.4.0 | Drop FORTRAN 77 support, Unified library |
+| 4.4.0 | Drop FORTRAN 77 support, Unified library, Drop netCDF 2.3.2 API + tools |
 
 HDF 4.3.0 (February 2024)
 * Minimum XDR functionality will be built into the library, so linking to TI-RPC, etc. will not be necessary
@@ -69,6 +70,7 @@ more planned HDF 4.2.x releases.
 HDF 4.4.0 (February 2025)
 * We will drop support for FORTRAN 77 and move to modern Fortran (2003 or 2008)
 * libdf and libmfhdf will be merged into a single libhdf4 library, Fortran will be built as a separate library
+* HDF4 includes an ancient netCDF 2.3.2 API along with the ncdump and ncgen tools. It would be nice to drop this and just have people get their netCDF API from the actual netCDF library.
 
 
 SNAPSHOTS, PREVIOUS RELEASES AND SOURCE CODE

@@ -356,7 +356,7 @@ macro (HDFTEST_COPY_FILE src dest target)
 endmacro ()
 
 macro (HDF_DIR_PATHS package_prefix)
-  option (HDF4_USE_GNU_DIRS "ON to use GNU Coding Standard install directory variables, OFF to use historical settings" FALSE)
+  option (HDF4_USE_GNU_DIRS "ON to use GNU Coding Standard install directory variables, OFF to use historical settings" OFF)
   if (HDF4_USE_GNU_DIRS)
     include(GNUInstallDirs)
     if (NOT ${package_prefix}_INSTALL_BIN_DIR)
@@ -473,18 +473,6 @@ macro (HDF_DIR_PATHS package_prefix)
   SET_HDF_OUTPUT_DIRS(${package_prefix})
 
   include (FetchContent)
-#-----------------------------------------------------------------------------
-# Setup pre-3.14 FetchContent
-#-----------------------------------------------------------------------------
-  if(${CMAKE_VERSION} VERSION_LESS 3.14)
-    macro(FetchContent_MakeAvailable NAME)
-        FetchContent_GetProperties(${NAME})
-        if(NOT ${NAME}_POPULATED)
-            FetchContent_Populate(${NAME})
-            add_subdirectory(${${NAME}_SOURCE_DIR} ${${NAME}_BINARY_DIR})
-        endif()
-    endmacro()
-  endif()
 endmacro ()
 
 macro (ADD_H4_FLAGS h4_flag_var infile)

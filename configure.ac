@@ -895,18 +895,16 @@ CPPFLAGS="-D_POSIX_C_SOURCE=200809L $CPPFLAGS"
 ## Checks for headers
 ## ======================================================================
 AC_CHECK_HEADERS([fcntl.h unistd.h])
-
-AC_CHECK_HEADERS([sys/file.h sys/resource.h sys/stat.h sys/time.h sys/wait.h])
-AC_CHECK_HEADERS([sys/types.h])
-
-AC_CHECK_HEADERS([io.h])
 AC_CHECK_HEADERS([arpa/inet.h netinet/in.h])
+AC_CHECK_HEADERS([sys/file.h sys/resource.h sys/stat.h sys/time.h sys/types.h sys/wait.h])
 
 ## Special MinGW checks
 case "`uname`" in
     MINGW*)
       # Check for Winsock library
       AC_CHECK_LIB([ws2_32], [htonl])
+      AC_DEFINE([HAVE_WIN32_API], [1], [Define if we export HDF4-built unmangled netCDF 2.3.2 API calls])
+      AC_DEFINE([F77_FUNC(name,NAME)], [name ## _], [Define H4_F77_FUNC as name ##])
       ;;
 esac
 
@@ -977,9 +975,7 @@ esac
 ## Checks for library functions
 ## ======================================================================
 
-AC_MSG_CHECKING([for math library support])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <math.h>]], [[sinh(37.927)]])],[AC_MSG_RESULT([yes])],[AC_MSG_RESULT([no]); LIBS="$LIBS -lm"])
-
+AC_CHECK_LIB([m], [ceil])
 AC_CHECK_FUNCS([fork getrusage system wait])
 
 
@@ -994,12 +990,15 @@ AC_CHECK_FUNCS([fork getrusage system wait])
 ## of being copied depending upon the host.
 case "$host" in
   *-linux*|*-k*bsd*-gnu|*-gnu*)BAR="linux"       ;;
+  *-openbsd*)           BAR="fbsd"        ;;  
   *-freebsd*)           BAR="fbsd"        ;;
+  *-openbsd*)           BAR="fbsd"        ;;  
   *-ibm-aix*)           BAR="aix"         ;;
   sparc64-*-solaris2*)  BAR="solaris64"   ;;
   *-*-solaris2*)        BAR="solaris"     ;;
   *-apple*)             BAR="apple"       ;;
   *-pc-cygwin*)         BAR="linux"       ;;
+  *-mingw*)             BAR="linux"       ;;  
   *)                    echo "*** unknown host $host!"; exit 1 ;;
 esac
 src_files=""

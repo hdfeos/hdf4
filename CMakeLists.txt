@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.18)
 project (HDF4 C)
 
 if (POLICY CMP0074)
@@ -42,16 +42,6 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
       "        $ cd MY_BUILD\n"
       "        $ cmake [OPTIONS] ..\n"
       )
-endif ()
-
-# CMake version 3.14 added option --ignore-eol to compare files
-#     cmake -E compare_files --ignore-eol file1 file2
-set (CMAKE_IGNORE_EOL "--ignore-eol")
-if (CMAKE_VERSION VERSION_LESS "3.14.0")
-  set (CMAKE_IGNORE_EOL "")
-  if (WIN32)
-    message (FATAL_ERROR "Windows builds require a minimum of CMake 3.14")
-  endif()
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -102,29 +92,29 @@ mark_as_advanced (HDF4_EXTERNAL_LIB_PREFIX)
 #   # Export configuration to this export variable
 #   set (HDF4_EXPORTED_TARGETS "project-targets")
 #
-#   # Setup all necessary overrides for zlib so that HDF4 uses our
-#   # internally compiled zlib rather than any other version
-#   if (HDF4_ENABLE_Z_LIB_SUPPORT)
-#    # We must tell the main HDF4 library that it depends on our zlib
-#     set (HDF4_LIB_DEPENDENCIES prjzlib)
-#     # Override the zlib header file
-#     if (PRJ_USE_SYSTEM_ZLIB)
-#       set (H4_ZLIB_HEADER "zlib.h")
+#   # Setup all necessary overrides for szip so that HDF4 uses our
+#   # internally compiled szip rather than any other version
+#   if (HDF4_ENABLE_SZIP_SUPPORT)
+#    # We must tell the main HDF4 library that it depends on our szip
+#     set (HDF4_LIB_DEPENDENCIES prjszip)
+#     # Override the szip header file
+#     if (PRJ_USE_SYSTEM_SZIP)
+#       set (H4_SZIP_HEADER "szip.h")
 #     else ()
-#      set (H4_ZLIB_HEADER "prj_zlib.h")
-#       # Set vars that FindZlib would have set if used in sub project
-#       set (ZLIB_INCLUDE_DIRS "${PRJ_ZLIB_INCLUDE_DIRS}")
-#       set (ZLIB_LIBRARIES prjzlib)
+#      set (H4_SZIP_HEADER "prj_szip.h")
+#       # Set vars that FindSZIP would have set if used in sub project
+#       set (SZIP_INCLUDE_DIRS "${PRJ_SZIP_INCLUDE_DIRS}")
+#       set (SZIP_LIBRARIES prjszip)
 #     endif ()
 #  endif ()
 #
 #   # Add the sub project
-#   add_subdirectory (Utilities/hdf4.2.5)
+#   add_subdirectory (Utilities/hdf4.3.0)
 #   # Add the HDF4 dirs to our include path
 #   set (HDF4_INCLUDE_DIR
-#       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.2.5/hdf/src
-#       ${PROJECT_BINARY_DIR}/Utilities/hdf4.2.5
-#       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.2.5/mfhdf/libsrc
+#       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.3.0/hdf/src
+#       ${PROJECT_BINARY_DIR}/Utilities/hdf4.3.0
+#       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.3.0/mfhdf/libsrc
 #   )
 #
 #-----------------------------------------------------------------------------
@@ -246,6 +236,74 @@ string (REGEX REPLACE ".*#define[ \t]+LIBVER_SUBRELEASE[ \t]+\"([0-9A-Za-z.]*)\"
 #message (STATUS "VERSION: ${H4_VERS_MAJOR}.${H4_VERS_MINOR}.${H4_VERS_RELEASE}-${H4_VERS_SUBRELEASE}")
 
 #-----------------------------------------------------------------------------
+# parse the full soversion number from config/lt_vers.am and include in H4_SOVERS_INFO
+#-----------------------------------------------------------------------------
+file (READ ${HDF4_SOURCE_DIR}/config/lt_vers.am _lt_vers_am_contents)
+string (REGEX REPLACE ".*LT_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$"
+    "\\1" H4_DF_SOVERS_INTERFACE ${_lt_vers_am_contents})
+string (REGEX REPLACE ".*LT_VERS_REVISION[ \t]+=[ \t]+([0-9]*).*$"
+    "\\1" H4_DF_SOVERS_MINOR ${_lt_vers_am_contents})
+string (REGEX REPLACE ".*LT_VERS_AGE[ \t]+=[ \t]+([0-9]*).*$"
+    "\\1" H4_DF_SOVERS_RELEASE ${_lt_vers_am_contents})
+math (EXPR H4_DF_SOVERS_MAJOR ${H4_DF_SOVERS_INTERFACE}-${H4_DF_SOVERS_RELEASE})
+message (VERBOSE "HDF SOVERSION: ${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+string (REGEX MATCH ".*LT_MF_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$" H4_MF_SOVERS_EXISTS ${_lt_vers_am_contents})
+if (H4_MF_SOVERS_EXISTS)
+  string (REGEX REPLACE ".*LT_MF_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_MF_SOVERS_INTERFACE ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_MF_VERS_REVISION[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_MF_SOVERS_MINOR ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_MF_VERS_AGE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_MF_SOVERS_RELEASE ${_lt_vers_am_contents})
+  math (EXPR H4_MF_SOVERS_MAJOR ${H4_MF_SOVERS_INTERFACE}-${H4_MF_SOVERS_RELEASE})
+  message (VERBOSE "MFHDFSOVERSION: ${H4_MF_SOVERS_MAJOR}.${H4_MF_SOVERS_RELEASE}.${H4_MF_SOVERS_MINOR}")
+endif ()
+string (REGEX MATCH ".*LT_XDR_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$" H4_XDR_SOVERS_EXISTS ${_lt_vers_am_contents})
+if (H4_XDR_SOVERS_EXISTS)
+  string (REGEX REPLACE ".*LT_XDR_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_XDR_SOVERS_INTERFACE ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_XDR_VERS_REVISION[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_XDR_SOVERS_MINOR ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_XDR_VERS_AGE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_XDR_SOVERS_RELEASE ${_lt_vers_am_contents})
+  math (EXPR H4_XDR_SOVERS_MAJOR ${H4_XDR_SOVERS_INTERFACE}-${H4_XDR_SOVERS_RELEASE})
+  message (VERBOSE "SOVERSION_XDR: ${H4_XDR_SOVERS_MAJOR}.${H4_XDR_SOVERS_RELEASE}.${H4_XDR_SOVERS_MINOR}")
+endif ()
+string (REGEX MATCH ".*LT_F_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$" H4_F_SOVERS_EXISTS ${_lt_vers_am_contents})
+if (H4_F_SOVERS_EXISTS)
+  string (REGEX REPLACE ".*LT_F_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_F_SOVERS_INTERFACE ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_F_VERS_REVISION[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_F_SOVERS_MINOR ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_F_VERS_AGE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_F_SOVERS_RELEASE ${_lt_vers_am_contents})
+  math (EXPR H4_F_SOVERS_MAJOR ${H4_F_SOVERS_INTERFACE}-${H4_F_SOVERS_RELEASE})
+  message (VERBOSE "SOVERSION_F: ${H4_F_SOVERS_MAJOR}.${H4_F_SOVERS_RELEASE}.${H4_F_SOVERS_MINOR}")
+endif ()
+string (REGEX MATCH ".*LT_MF_F_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$" H4_MF_F_SOVERS_EXISTS ${_lt_vers_am_contents})
+if (H4_MF_F_SOVERS_EXISTS)
+  string (REGEX REPLACE ".*LT_MF_F_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_MF_F_SOVERS_INTERFACE ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_MF_F_VERS_REVISION[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_MF_F_SOVERS_MINOR ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_MF_F_VERS_AGE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_MF_F_SOVERS_RELEASE ${_lt_vers_am_contents})
+  math (EXPR H4_MF_F_SOVERS_MAJOR ${H4_MF_F_SOVERS_INTERFACE}-${H4_MF_F_SOVERS_RELEASE})
+  message (VERBOSE "SOVERSION_MF_F: ${H4_MF_F_SOVERS_MAJOR}.${H4_MF_F_SOVERS_RELEASE}.${H4_MF_F_SOVERS_MINOR}")
+endif ()
+string (REGEX MATCH ".*LT_JAVA_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$" H4_JAVA_SOVERS_EXISTS ${_lt_vers_am_contents})
+if(H4_JAVA_SOVERS_EXISTS)
+  string (REGEX REPLACE ".*LT_JAVA_VERS_INTERFACE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_JAVA_SOVERS_INTERFACE ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_JAVA_VERS_REVISION[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_JAVA_SOVERS_MINOR ${_lt_vers_am_contents})
+  string (REGEX REPLACE ".*LT_JAVA_VERS_AGE[ \t]+=[ \t]+([0-9]*).*$"
+      "\\1" H4_JAVA_SOVERS_RELEASE ${_lt_vers_am_contents})
+  math (EXPR H4_JAVA_SOVERS_MAJOR ${H4_JAVA_SOVERS_INTERFACE}-${H4_JAVA_SOVERS_RELEASE})
+  message (VERBOSE "SOVERSION_JAVA: ${H4_JAVA_SOVERS_MAJOR}.${H4_JAVA_SOVERS_RELEASE}.${H4_JAVA_SOVERS_MINOR}")
+endif ()
+
+#-----------------------------------------------------------------------------
 # Basic HDF4 stuff here
 #-----------------------------------------------------------------------------
 set (HDF4_PACKAGE "hdf4")
@@ -257,12 +315,47 @@ set (HDF4_PACKAGE_VERSION_STRING "${HDF4_PACKAGE_VERSION}")
 if (NOT "${H4_VERS_SUBRELEASE}" STREQUAL "")
   set (HDF4_PACKAGE_VERSION_STRING "${HDF4_PACKAGE_VERSION_STRING}-${H4_VERS_SUBRELEASE}")
 endif ()
+set (HDF4_DF_PACKAGE_SOVERSION "${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+set (HDF4_DF_PACKAGE_SOVERSION_MAJOR "${H4_DF_SOVERS_MAJOR}")
+if (H4_MF_SOVERS_EXISTS)
+  set (HDF4_MF_PACKAGE_SOVERSION "${H4_MF_SOVERS_MAJOR}.${H4_MF_SOVERS_RELEASE}.${H4_MF_SOVERS_MINOR}")
+  set (HDF4_MF_PACKAGE_SOVERSION_MAJOR "${H4_MF_SOVERS_MAJOR}")
+else ()
+  set (HDF4_MF_PACKAGE_SOVERSION "${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+  set (HDF4_MF_PACKAGE_SOVERSION_MAJOR "${H4_DF_SOVERS_MAJOR}")
+endif ()
+if (H4_XDR_SOVERS_EXISTS)
+  set (HDF4_XDR_PACKAGE_SOVERSION "${H4_XDR_SOVERS_MAJOR}.${H4_XDR_SOVERS_RELEASE}.${H4_XDR_SOVERS_MINOR}")
+  set (HDF4_XDR_PACKAGE_SOVERSION_MAJOR "${H4_XDR_SOVERS_MAJOR}")
+else ()
+  set (HDF4_XDR_PACKAGE_SOVERSION "${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+  set (HDF4_XDR_PACKAGE_SOVERSION_MAJOR "${H4_DF_SOVERS_MAJOR}")
+endif ()
+if (H4_F_SOVERS_EXISTS)
+  set (HDF4_F_PACKAGE_SOVERSION "${H4_F_SOVERS_MAJOR}.${H4_F_SOVERS_RELEASE}.${H4_F_SOVERS_MINOR}")
+  set (HDF4_F_PACKAGE_SOVERSION_MAJOR "${H4_F_SOVERS_MAJOR}")
+else ()
+  set (HDF4_F_PACKAGE_SOVERSION "${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+  set (HDF4_F_PACKAGE_SOVERSION_MAJOR "${H4_DF_SOVERS_MAJOR}")
+endif ()
+if (H4_MF_F_SOVERS_EXISTS)
+  set (HDF4_MF_F_PACKAGE_SOVERSION "${H4_MF_F_SOVERS_MAJOR}.${H4_MF_F_SOVERS_RELEASE}.${H4_MF_F_SOVERS_MINOR}")
+  set (HDF4_MF_F_PACKAGE_SOVERSION_MAJOR "${H4_MF_F_SOVERS_MAJOR}")
+else ()
+  set (HDF4_MF_F_PACKAGE_SOVERSION "${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+  set (HDF4_MF_F_PACKAGE_SOVERSION_MAJOR "${H4_DF_SOVERS_MAJOR}")
+endif ()
+if (H4_JAVA_SOVERS_EXISTS)
+  set (HDF4_JAVA_PACKAGE_SOVERSION "${H4_JAVA_SOVERS_MAJOR}.${H4_JAVA_SOVERS_RELEASE}.${H4_JAVA_SOVERS_MINOR}")
+  set (HDF4_JAVA_PACKAGE_SOVERSION_MAJOR "${H4_JAVA_SOVERS_MAJOR}")
+else ()
+  set (HDF4_JAVA_PACKAGE_SOVERSION "${H4_DF_SOVERS_MAJOR}.${H4_DF_SOVERS_RELEASE}.${H4_DF_SOVERS_MINOR}")
+  set (HDF4_JAVA_PACKAGE_SOVERSION_MAJOR "${H4_DF_SOVERS_MAJOR}")
+endif ()
 set (HDF4_PACKAGE_STRING "${HDF4_PACKAGE_NAME} ${HDF4_PACKAGE_VERSION_STRING}")
 set (HDF4_PACKAGE_TARNAME "${HDF4_PACKAGE}${HDF_PACKAGE_EXT}")
 set (HDF4_PACKAGE_URL "http://www.hdfgroup.org")
 set (HDF4_PACKAGE_BUGREPORT "help@hdfgroup.org")
-set (HDF4_PACKAGE_SOVERSION "${H4_VERS_MAJOR}.${H4_VERS_RELEASE}.${H4_VERS_MINOR}")
-set (HDF4_PACKAGE_SOVERSION_MAJOR "${H4_VERS_MAJOR}")
 
 #-----------------------------------------------------------------------------
 # Set variables needed for installation
@@ -532,7 +625,7 @@ if (BUILD_TESTING)
 endif ()
 
 #-----------------------------------------------------------------------------
-# Option to build Fortran bindings/tests/examples
+# Option to build Fortran bindings/tests
 # Make sure this appears before the CONFIGURE_FILE step
 # so that fortran name mangling is detected before writing H4config.h
 # NOTE:

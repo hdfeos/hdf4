@@ -14,10 +14,11 @@
 #ifndef HDFTEST_H
 #define HDFTEST_H
 
+#include <float.h>
+#include <math.h>
 #include <stdio.h>
 
-/*
- * The name of the test is printed by saying TESTING("something") which will
+/* The name of the test is printed by saying TESTING("something") which will
  * result in the string `Testing something' being flushed to standard output.
  * If a test passes, fails, or is skipped then the PASSED(), H4_FAILED(), or
  * SKIPPED() macro should be called.  After H4_FAILED(), the caller
@@ -30,15 +31,15 @@
         fflush(stdout);                                                                                      \
     }
 #define PASSED()                                                                                             \
-    {                                                                                                        \
+    do {                                                                                                     \
         puts(" PASSED");                                                                                     \
         fflush(stdout);                                                                                      \
-    }
+    } while (0)
 #define H4_FAILED()                                                                                          \
-    {                                                                                                        \
+    do {                                                                                                     \
         puts("*FAILED*");                                                                                    \
         fflush(stdout);                                                                                      \
-    }
+    } while (0)
 #define H4_WARNING()                                                                                         \
     {                                                                                                        \
         puts("*WARNING*");                                                                                   \
@@ -99,6 +100,20 @@
         }                                                                                                    \
     }
 
+/*
+ * Methods to compare the equality of floating-point values:
+ *
+ *    1. H4_XXX_ABS_EQUAL - check if the difference is smaller than the
+ *       Epsilon value.  The Epsilon values, FLT_EPSILON, DBL_EPSILON,
+ *       and LDBL_EPSILON, are defined by compiler in float.h.
+ *
+ *  HDF5 (from whence these macros came) also includes macros that
+ *  use relative error. Those will be brought over only if needed.
+ */
+#define H4_FLT_ABS_EQUAL(X, Y)  (fabsf((X) - (Y)) < FLT_EPSILON)
+#define H4_DBL_ABS_EQUAL(X, Y)  (fabs((X) - (Y)) < DBL_EPSILON)
+#define H4_LDBL_ABS_EQUAL(X, Y) (fabsl((X) - (Y)) < LDBL_EPSILON)
+
 /*************************** Utility Functions ***************************/
 
 /* Just return the srcdir path */
@@ -125,7 +140,7 @@ int32 make_Ext3D_SDS(int32 sd_id, char *sds_name, int32 type, int32 rank, int32 
 int32 append_Data2SDS(int32 sd_id, char *sds_name, int32 *start, int32 *edges, void *ap_data);
 
 /* Calls SDgetdatasize then verify the size against data_size */
-void verify_datasize(int32 sds_id, int32 data_size, char *sds_name);
+intn verify_datasize(int32 sds_id, int32 data_size, char *sds_name);
 
 /* Verifies the unlimited dimension's size and the variable's data. */
 int verify_info_data(int32 sds_id, int32 expected_dimsize, int16 *result);
