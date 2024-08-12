@@ -49,16 +49,16 @@
 #define FILE_NAME "bug376.hdf" /* data file to test */
 #define DIM0      10
 
-static intn
+static int
 test_file_inuse()
 {
     int32       file_id, sd_id[5], sds_id[5];
-    intn        statusn;
+    int         statusn;
     int32       dims[1], start[1], edges[1], rank;
     int16       array_data[DIM0];
     const char *names[5] = {"data1", "data2", "data3", "data4", "data5"};
-    intn        i, j;
-    intn        num_errs = 0; /* number of errors so far */
+    int         i, j;
+    int         num_errs = 0; /* number of errors so far */
 
     for (i = 0; i < 5; i++) {
         /* Create and open the file and initiate the SD interface. */
@@ -180,7 +180,7 @@ test_max_open_files()
     int32 fids[NUM_FILES_HI];         /* holds IDs of opened files */
     char  filename[NUM_FILES_HI][10]; /* holds generated file names */
     char  readfname[H4_MAX_NC_NAME];  /* file name retrieved from file id */
-    intn  index, status, curr_max,    /* curr maximum number of open files allowed in HDF */
+    int   index, status, curr_max,    /* curr maximum number of open files allowed in HDF */
         sys_limit,                    /* maximum number of open files allowed by system */
         curr_max_bk,                  /* back up of curr_max */
         curr_opened,                  /* number of files currently being opened */
@@ -196,7 +196,7 @@ test_max_open_files()
     curr_max = SDreset_maxopenfiles(33);
     VERIFY(curr_max, 33, "test_maxopenfiles: SDreset_maxopenfiles");
 
-    /* Try to create more files than the default max (currently, 32) and
+    /* Try to create more files than the default max (currently, 33) and
        all should succeed */
     for (index = 0; index < NUM_FILES_LOW; index++) {
         /* Create a file */
@@ -204,6 +204,10 @@ test_max_open_files()
         fids[index] = SDstart(filename[index], DFACC_CREATE);
         CHECK(fids[index], FAIL, "test_maxopenfiles: SDstart");
     }
+    /* Get the current max and system limit, the current max should now be at system limit */
+    status = SDget_maxopenfiles(&curr_max, &sys_limit);
+    CHECK(status, FAIL, "test_maxopenfiles: SDget_maxopenfiles");
+    VERIFY(curr_max, sys_limit, "test_maxopenfiles: SDget_maxopenfiles");
 
     /* Verify that NUM_FILES_LOW files are opened */
     curr_opened = SDget_numopenfiles();
@@ -218,11 +222,6 @@ test_max_open_files()
     CHECK(status, FAIL, "test_maxopenfiles: SDend");
     curr_opened = SDget_numopenfiles();
     VERIFY(curr_opened, NUM_FILES_LOW - 3, "test_maxopenfiles: SDget_numopenfiles");
-
-    /* Get the current max and system limit */
-    status = SDget_maxopenfiles(&curr_max, &sys_limit);
-    CHECK(status, FAIL, "test_maxopenfiles: SDget_maxopenfiles");
-    VERIFY(curr_max, sys_limit, "test_maxopenfiles: SDreset_maxopenfiles");
 
     /* Get the current max another way, it should be the system limit */
     curr_max = SDreset_maxopenfiles(0);
@@ -241,7 +240,7 @@ test_max_open_files()
     /* Reset current max to a value that is smaller than the current
        number of opened files; it shouldn't reset */
     curr_max_bk = curr_max;
-    curr_max    = SDreset_maxopenfiles(curr_opened - 1);
+    curr_max    = SDreset_maxopenfiles(curr_opened - 4);
     VERIFY(curr_max, curr_max_bk, "test_maxopenfiles: SDreset_maxopenfiles");
 
     /* Reset current max again to a value that is smaller than the
@@ -328,8 +327,8 @@ test_longfilename()
     int32 dims[2]; /* variable shapes */
     char  dsname[10];
     char  filename[256];
-    intn  status   = 0; /* status returned by called functions */
-    intn  num_errs = 0; /* number of errors so far */
+    int   status   = 0; /* status returned by called functions */
+    int   num_errs = 0; /* number of errors so far */
 
     strcpy(dsname, "dataset 1");
     strcpy(filename, "This file name has quite a few characters because it is used to test the fix of "
@@ -376,12 +375,12 @@ static int
 test_fileformat()
 {
     int32       fid;                          /* file id */
-    intn        ishdf        = 0;             /* true if file has HDF format */
-    intn        isnetcdf     = 0;             /* true if file has classic netCDF format */
-    intn        isnetcdf64   = 0;             /* true if file has 64-bit netCDF format */
-    intn        num_errs     = 0;             /* number of errors so far */
+    int         ishdf        = 0;             /* true if file has HDF format */
+    int         isnetcdf     = 0;             /* true if file has classic netCDF format */
+    int         isnetcdf64   = 0;             /* true if file has 64-bit netCDF format */
+    int         num_errs     = 0;             /* number of errors so far */
     const char *hdf_basename = "hdffile.hdf"; /* hdf file to test */
-    intn        status       = 0;             /* status returned by called functions */
+    int         status       = 0;             /* status returned by called functions */
 
     /* Create an empty HDF file to test Hishdf. */
     fid = SDstart(hdf_basename, DFACC_CREATE);
@@ -426,11 +425,55 @@ test_fileformat()
     return num_errs;
 }
 
+/********************************************************************
+   Name: test_invalid_opening() - tests that SDstart behaves correctly
+            in various scenarios.
+
+   Description:
+    The following attempts are made in this test:
+    - opening a non-existing file with RDONLY access
+    - opening a non-existing file with RDWR access
+
+   Return value:
+    The number of errors occurred in this routine.
+
+*********************************************************************/
+
+#define UFOFILE "file.UFO" /* non-existing file */
+
+static int
+test_invalid_opening()
+{
+    int32 fid;          /* file id */
+    int   num_errs = 0; /* number of errors */
+
+    /* Try opening a non-existing file with RDONLY and RDWR. Both should fail. */
+
+    fid = SDstart(UFOFILE, DFACC_RDONLY);
+    if (fid != FAIL) {
+        fprintf(stderr, "SDstart(..., RDONLY) should fail\n");
+        num_errs++;
+        SDend(fid);
+    }
+
+    fid = SDstart(UFOFILE, DFACC_RDWR);
+    if (fid != FAIL) {
+        fprintf(stderr, "SDstart(..., RDWR) should fail\n");
+        num_errs++;
+        SDend(fid);
+    }
+
+    if (num_errs == 0)
+        return SUCCEED;
+    else
+        return num_errs;
+}
+
 /* Test driver for testing miscellaneous file related APIs. */
 extern int
 test_files()
 {
-    intn num_errs = 0; /* number of errors */
+    int num_errs = 0; /* number of errors */
 
     /* Output message about test being performed */
     TESTING("miscellaneous file related functions (tfile.c)");
@@ -446,6 +489,9 @@ test_files()
 
     /* Test determining of file format */
     num_errs = num_errs + test_fileformat();
+
+    /* Test SDstart on various scenarios */
+    num_errs = num_errs + test_invalid_opening();
 
     if (num_errs == 0)
         PASSED();

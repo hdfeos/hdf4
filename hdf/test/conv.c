@@ -12,27 +12,12 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*
-   FILE
-   conv.c
-   Test HDF Number-Type conversion routines
-
-   REMARKS
-
-   DESIGN
-
-   BUGS/LIMITATIONS
-
-   EXPORTED ROUTINES
-
-   AUTHOR
-   Quincey Koziol
-
-   MODIFICATION HISTORY
-   10/27/93 - Started coding.
+ * Test HDF Number-Type conversion routines
  */
 
-#include "tproto.h"
 #include <time.h>
+
+#include "testhdf.h"
 
 /* last ditch attempt do define this value... */
 #ifndef UINT_MAX
@@ -60,16 +45,12 @@
 #define clock() (0)
 #endif
 
-extern int Verbocity;
+extern int Verbosity;
 
 /* Local variables */
 static int32       test_type[] = {0, DFNT_LITEND, DFNT_NATIVE};
 static const char *test_name[] = {"Big-Endian", "Little-Endian", "Native"};
 
-/* for those machines with imprecise IEEE<-> conversions, this should be */
-/* close enough */
-#define EPS64 ((float64)1.0E-14)
-#define EPS32 ((float32)1.0E-7)
 void
 test_conv(void)
 {
@@ -82,8 +63,8 @@ test_conv(void)
     int32   *src_int32, *dst_int32, *dst2_int32;
     float32 *src_float32, *dst_float32, *dst2_float32;
     float64 *src_float64, *dst_float64, *dst2_float64;
-    intn     i, r;
-    intn     t;
+    int      i, r;
+    int      t;
     int32    ret;
 
     SEED((int)time(NULL)); /* seed with effectively random number */

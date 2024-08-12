@@ -109,7 +109,7 @@
  *   HMCreadChunk()
  */
 
-#include "tproto.h"
+#include "testhdf.h"
 #include "hchunks_priv.h"
 
 #define TESTFILE_NAME "tchunks.hdf"
@@ -183,7 +183,7 @@ test_chunks(void)
     sp_info_block_t info_block;         /* special info block */
     comp_info       cinfo;
     model_info      minfo;
-    intn            errors = 0;
+    int             errors = 0;
 
     outbuf = (uint8 *)calloc(BUFSIZE, sizeof(uint8));
     inbuf  = (uint8 *)calloc(BUFSIZE, sizeof(uint8));
@@ -197,7 +197,7 @@ test_chunks(void)
 
     /* allocate space for chunk dimensions */
     if ((chunk[0].pdims = (DIM_DEF *)malloc(5 * sizeof(DIM_DEF))) == NULL) {
-        printf("test_chunks: error allocatin space for chunk dims\n");
+        printf("test_chunks: error allocating space for chunk dims\n");
         errors++;
         goto done;
     }
@@ -1443,7 +1443,7 @@ test_chunks(void)
        9. Create 4-D element with partial chunks.
        Write only half the data out(5,000 bytes)
        Set dimension to 10x10x10x10 array  real data 10,000 bytes .
-       120 chunks whit chunks of 2x3x4x5 = 120 bytes,
+       120 chunks with chunks of 2x3x4x5 = 120 bytes,
        data size with chunks is 120 bytes x 120 chunks = 14,400 bytes
        */
     chunk[0].num_dims   = 4;

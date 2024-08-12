@@ -11,7 +11,8 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "tproto.h"
+#include "testhdf.h"
+
 #define TESTFILE_NAME "tblocks.hdf"
 
 #define BUFSIZE 4096
@@ -31,7 +32,7 @@ test_hblocks(void)
     int16  acc_mode, special;
     int    i;
     int32  ret;
-    intn   errors = 0;
+    int    errors = 0;
 
     outbuf = (uint8 *)calloc(BUFSIZE, sizeof(uint8));
     inbuf  = (uint8 *)calloc(BUFSIZE, sizeof(uint8));

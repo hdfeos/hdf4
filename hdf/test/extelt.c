@@ -15,7 +15,7 @@
  * These is a first pass at rewriting how these tests for exteranl
  * elements were done -GV
  */
-#include "tproto.h"
+#include "testhdf.h"
 #define TESTFILE_NAME  "t.hdf"                  /* file for first 4 series of tests */
 #define TESTFILE_NAME1 "tx.hdf"                 /* file for last test */
 #define STRING         "element 1000 2"         /* 14 bytes */
@@ -37,8 +37,8 @@ test_hextelt(void)
     int16  acc_mode, special;
     int    i;
     int32  ret;
-    intn   errflag = 0;
-    intn   errors  = 0;
+    int    errflag = 0;
+    int    errors  = 0;
 
     outbuf = (uint8 *)calloc(BUF_SIZE, sizeof(uint8));
     inbuf  = (uint8 *)calloc(BUF_SIZE, sizeof(uint8));

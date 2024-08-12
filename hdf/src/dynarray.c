@@ -50,8 +50,8 @@ EXPORTED ROUTINES
 #include "dynarray_priv.h"
 
 typedef struct dynarray_tag {
-    intn   num_elems; /* Number of elements in the array currently */
-    intn   incr_mult; /* Multiple to increment the array size by */
+    int    num_elems; /* Number of elements in the array currently */
+    int    incr_mult; /* Multiple to increment the array size by */
     void **arr;       /* Pointer to the actual array of void *'s */
 } dynarr_t;
 
@@ -68,8 +68,8 @@ typedef struct dynarray_tag {
 
 *******************************************************************************/
 dynarr_p
-DAcreate_array(intn start_size, /* IN: Initial array size */
-               intn incr_mult   /* IN: multiple to create additional elements in */
+DAcreate_array(int start_size, /* IN: Initial array size */
+               int incr_mult   /* IN: multiple to create additional elements in */
 )
 {
     dynarr_t *new_arr   = NULL; /* ptr to the new dynarray */
@@ -86,10 +86,10 @@ DAcreate_array(intn start_size, /* IN: Initial array size */
     new_arr->num_elems = start_size;
     new_arr->incr_mult = incr_mult;
     if (start_size > 0) { /* only allocate space if the initial size is positive */
-        new_arr->arr = (void **)calloc(start_size, sizeof(void *));
+        new_arr->arr = (void **)calloc((size_t)start_size, sizeof(void *));
         if (new_arr->arr == NULL)
             HGOTO_ERROR(DFE_NOSPACE, NULL);
-    } /* end if */
+    }
 
     ret_value = (dynarr_p)new_arr;
 
@@ -116,14 +116,14 @@ done:
     Returns SUCCEED if successful and FAIL otherwise
 
 *******************************************************************************/
-intn
+int
 DAdestroy_array(dynarr_p arr,      /* IN: Array to destroy */
-                intn     free_elem /* IN: whether to free each element */
+                int      free_elem /* IN: whether to free each element */
 )
 {
     dynarr_t *dest_arr; /* ptr to the dynarray destroy*/
-    intn      i;
-    intn      ret_value = SUCCEED;
+    int       i;
+    int       ret_value = SUCCEED;
 
     HEclear();
     dest_arr = (dynarr_t *)arr;
@@ -154,12 +154,12 @@ done:
     Returns # of dynarray elements if successful and FAIL otherwise
 
 *******************************************************************************/
-intn
+int
 DAsize_array(dynarr_p arr /* IN: Array to get size of */
 )
 {
     dynarr_t *arr_ptr; /* ptr to the dynarray destroy*/
-    intn      ret_value = SUCCEED;
+    int       ret_value = SUCCEED;
 
     HEclear();
     arr_ptr = (dynarr_t *)arr;
@@ -187,7 +187,7 @@ done:
 *******************************************************************************/
 void *
 DAget_elem(dynarr_p arr_ptr, /* IN: Array to access */
-           intn     elem     /* IN: Array element to retrieve */
+           int      elem     /* IN: Array element to retrieve */
 )
 {
     dynarr_t *arr; /* ptr to the dynarray */
@@ -221,14 +221,14 @@ done:
     Returns SUCCEED if successful and NULL otherwise
 
 *******************************************************************************/
-intn
+int
 DAset_elem(dynarr_p arr_ptr, /* IN: Array to access */
-           intn     elem,    /* IN: Array element to set */
+           int      elem,    /* IN: Array element to set */
            void    *obj      /* IN: Pointer to the object to store */
 )
 {
     dynarr_t *arr; /* ptr to the dynarray */
-    intn      ret_value = SUCCEED;
+    int       ret_value = SUCCEED;
 
     HEclear();
     arr = (dynarr_t *)arr_ptr;
@@ -236,23 +236,23 @@ DAset_elem(dynarr_p arr_ptr, /* IN: Array to access */
         HGOTO_ERROR(DFE_ARGS, FAIL);
 
     if (elem >= arr->num_elems) {
-        intn new_size; /* new number of elements in the array */
+        int new_size; /* new number of elements in the array */
 
         new_size = ((elem / arr->incr_mult) + 1) * arr->incr_mult;
         if (arr->num_elems == 0) { /* array not currently allocated */
-            if ((arr->arr = (void **)calloc(new_size, sizeof(void *))) == NULL)
+            if ((arr->arr = (void **)calloc((size_t)new_size, sizeof(void *))) == NULL)
                 HGOTO_ERROR(DFE_NOSPACE, FAIL);
         }                   /* end if */
         else {              /* extend the existing array */
             void **new_arr; /* storage for the new array of ptrs */
 
-            if ((new_arr = (void **)realloc(arr->arr, new_size * sizeof(void *))) == NULL)
+            if ((new_arr = (void **)realloc(arr->arr, (size_t)new_size * sizeof(void *))) == NULL)
                 HGOTO_ERROR(DFE_NOSPACE, FAIL);
-            memset(&new_arr[arr->num_elems], 0, sizeof(void *) * (uintn)(new_size - arr->num_elems));
+            memset(&new_arr[arr->num_elems], 0, sizeof(void *) * (unsigned)(new_size - arr->num_elems));
             arr->arr = new_arr;
-        } /* end else */
+        }
         arr->num_elems = new_size;
-    } /* end if */
+    }
 
     /* Set the element value */
     arr->arr[elem] = obj;
@@ -276,7 +276,7 @@ done:
 *******************************************************************************/
 void *
 DAdel_elem(dynarr_p arr_ptr, /* IN: Array to access */
-           intn     elem     /* IN: Array element to retrieve */
+           int      elem     /* IN: Array element to retrieve */
 )
 {
     dynarr_t *arr; /* ptr to the dynarray */
@@ -292,7 +292,7 @@ DAdel_elem(dynarr_p arr_ptr, /* IN: Array to access */
     else {
         ret_value      = arr->arr[elem];
         arr->arr[elem] = NULL;
-    } /* end else */
+    }
 
 done:
     return ret_value;

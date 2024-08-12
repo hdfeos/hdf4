@@ -59,15 +59,15 @@
     "The name of this dataset is long, and it is used to test the new variable length name feature"
 #define shortname_ds "A"
 
-static intn
+static int
 test_SDSnames()
 {
     int32  fid, dset1, dset2;
     int32  rank, dtype, nattrs, dimsizes[RANK];
     char  *ds_name;
     uint16 name_len;
-    intn   status;
-    intn   num_errs = 0; /* number of errors so far */
+    int    status;
+    int    num_errs = 0; /* number of errors so far */
 
     /* Create a file */
     fid = SDstart(FILE_NAME, DFACC_CREATE);
@@ -179,17 +179,19 @@ test_SDSnames()
 #define DS2_NAME     "data 2"
 #define DIM0         10
 
-static intn
+static int
 test_unlim_dim()
 {
     int32 fid, dset1, dset2;
     int32 rank, start[1], edges[1], dtype, nattrs, dimsizes[1];
-    int16 array_data[DIM0],                          /* data to be written to both datasets */
-        append_data[DIM0],                           /* data to be appended to both datasets */
-        outdata[DIM0 + DIM0], outdata1[DIM0 + DIM0]; /* data read */
-    char ds_name[20];
-    intn idx, status;
-    intn num_errs = 0; /* number of errors so far */
+    int16 array_data[DIM0];      /* Data to be written to both datasets */
+    int16 append_data[DIM0];     /* Data to be appended to both datasets */
+    int16 outdata[DIM0 + DIM0];  /* Data read */
+    int16 outdata1[DIM0 + DIM0]; /* Data read */
+    char  ds_name[20];
+    int16 idx;
+    int   status;
+    int   num_errs = 0; /* number of errors so far */
 
     /* Create a file */
     fid = SDstart(UD_FILE_NAME, DFACC_CREATE);
@@ -322,7 +324,7 @@ test_unlim_dim()
 #define N_DSETS        2
 #define RANK1          1
 
-static intn
+static int
 test_unlim_inloop()
 {
     int32 fid;
@@ -332,9 +334,9 @@ test_unlim_inloop()
     char  sds_name[20];
     int   i, n_writes; /* number of times writing to the data sets */
     /*int32   n,m, mm;*/
-    intn    status;
+    int     status;
     float64 array_data[SIZE];
-    intn    num_errs = 0; /* number of errors so far */
+    int     num_errs = 0; /* number of errors so far */
 
     /* Create a file */
     fid = SDstart(UDIL_FILE_NAME, DFACC_CREATE);
@@ -406,9 +408,9 @@ test_unlim_inloop()
         /* Verify the read data */
         n_writes = 0;
         while (n_writes < 2) {
-            intn in, out;
+            int in, out;
             for (in = 0, out = 0 + (SIZE * n_writes); in < SIZE; in++, out++) {
-                VERIFY(outdata[out], array_data[in], "SDreaddata");
+                VERIFY_DOUBLE(outdata[out], array_data[in], "SDreaddata");
             }
             n_writes++;
         }
@@ -448,16 +450,17 @@ test_unlim_inloop()
 
 #define ARGS_FILE_NAME "test_arguments.hdf" /* file to test validating args */
 
-static intn
+static int
 test_valid_args()
 {
     int32 fid, dset1, dset2;
     int32 start[2], edges[2], dtype, nattrs, dimsizes[2], rank, strides[2];
-    int16 array_data[X_LENGTH][Y_LENGTH], /* data to be written to datasets */
-        outdata[X_LENGTH][Y_LENGTH];      /* data read */
-    char ds_name[20];
-    intn idxx, idxy, status;
-    intn num_errs = 0; /* number of errors so far */
+    int16 array_data[X_LENGTH][Y_LENGTH]; /* Data to be written to datasets */
+    int16 outdata[X_LENGTH][Y_LENGTH];    /* Data read */
+    char  ds_name[20];
+    int16 idxx, idxy;
+    int   status;
+    int   num_errs = 0; /* number of errors so far */
 
     /* Create a file */
     fid = SDstart(ARGS_FILE_NAME, DFACC_CREATE);
@@ -476,7 +479,7 @@ test_valid_args()
     /* Fill the stored-data array with values. */
     for (idxx = 0; idxx < X_LENGTH; idxx++) {
         for (idxy = 0; idxy < Y_LENGTH; idxy++) {
-            array_data[idxx][idxy] = idxx * idxy + 1;
+            array_data[idxx][idxy] = (int16)(idxx * idxy + 1);
         }
     }
 
@@ -578,13 +581,13 @@ test_valid_args()
 #define D3_Z 2
 
 /* Helper function to test_valid_args2 creates and writes to a dataset */
-static intn
-makeSDS(int32 sd_id, char *name, int32 dtype, int32 rank, int32 *dimsizes, int32 *start, int32 *strides,
+static int
+makeSDS(int32 sd_id, const char *name, int32 dtype, int32 rank, int32 *dimsizes, int32 *start, int32 *strides,
         int32 *count, void *data)
 {
     int32 sds_id;
-    intn  status;
-    intn  num_errs = 0; /* number of errors so far */
+    int   status;
+    int   num_errs = 0; /* number of errors so far */
 
     /* Create the named dataset */
     sds_id = SDcreate(sd_id, name, dtype, rank, dimsizes);
@@ -601,18 +604,18 @@ makeSDS(int32 sd_id, char *name, int32 dtype, int32 rank, int32 *dimsizes, int32
     return (status);
 }
 
-static intn
+static int
 test_valid_args2()
 {
     int32   sd_id, sds_id;
     int32   dim[1], dims2[2], dims3[3], d1start[1], d2start[2], d3start[3];
     int32   d1count[1], d2count[2], d3count[3];
     int32   d1stride[1], d2stride[2], d3stride[3];
-    float32 data1 = 32.0, outdata1;
+    float32 data1 = 32.0F, outdata1;
     int32   data2[D2_X][D2_Y], outdata2[D2_X][D2_Y];
     int16   data3[D3_X][D3_Y][D3_Z], outdata3[D3_X][D3_Y][D3_Z];
-    intn    i, j, k, status;
-    intn    num_errs = 0; /* number of errors so far */
+    int     i, j, k, status;
+    int     num_errs = 0; /* number of errors so far */
 
     /* Create and open the file and initiate the SD interface. */
     sd_id = SDstart("b150.hdf", DFACC_CREATE);
@@ -650,7 +653,7 @@ test_valid_args2()
     for (i = 0; i < D3_X; i++)
         for (j = 0; j < D3_Y; j++)
             for (k = 0; k < D3_Z; k++)
-                data3[i][j][k] = i * j * k;
+                data3[i][j][k] = (int16)(i * j * k);
 
     status = makeSDS(sd_id, "data3", DFNT_INT16, 3, dims3, d3start, NULL, d3count, data3);
     CHECK(status, FAIL, "makeSDS data3");
@@ -682,7 +685,7 @@ test_valid_args2()
     d1count[0] = 1;
     status     = SDreaddata(sds_id, d1start, d1stride, d1count, &outdata1);
     CHECK(status, FAIL, "SDreaddata");
-    VERIFY(outdata1, data1, "SDreaddata first dataset");
+    VERIFY_FLOAT(outdata1, data1, "SDreaddata first dataset");
 
     /* Terminate access to the first dataset */
     status = SDendaccess(sds_id);
@@ -743,13 +746,434 @@ test_valid_args2()
 
     /* Return the number of errors that's been kept track of, so far */
     return num_errs;
-} /* test_valid_args2 */
+}
+
+/***************************************************************************
+   Name: test_fillvalue() - tests fill value feature of data sets
+
+   Description:
+        Test data sets with SD_FILL and SD_NOFILL.
+
+   Return value:
+        The number of errors occurred in this routine.
+
+****************************************************************************/
+#define FILE1 "test1.hdf"
+
+static int
+test_fillvalue()
+{
+    int32 f1;
+    int32 sdid;
+    int32 dimsize[RANK]; /* dimension sizes */
+    int32 idata[100];
+    int32 fillval = 0, readval = 0;
+    int32 index;
+    int32 start[2], end[2];
+    int   status;
+    int   num_errs = 0; /* number of errors so far */
+
+    /* test SDsetfillmode   */
+    /* test fixed size SDS   */
+    /* create an empty SDS, set SD_NOFILL.
+       Change the fill mode to SD_FILL, and write a slab of data */
+
+    /* Initialize idata with an obvious sentinel value */
+    for (int i = 0; i < 100; i++)
+        idata[i] = 42;
+
+    /* open file FILE1 */
+    f1 = SDstart(FILE1, DFACC_RDWR);
+    CHECK(f1, FAIL, "SDstart (again)");
+
+    /* Set fill mode on file to not write out fill values */
+    status = SDsetfillmode(f1, SD_NOFILL);
+    CHECK(status, FAIL, "SDsetfillmode: (SD_NOFILL)");
+
+    /* Create data set 'FIXED1' in file FILE1 */
+    dimsize[0] = 5;
+    dimsize[1] = 6;
+    sdid       = SDcreate(f1, "FIXED1", DFNT_INT32, 2, dimsize);
+    CHECK(sdid, FAIL, "SDcreate:Fail to create data set 'FIXED1' in FILE1");
+
+    for (int i = 0; i < 30; i++)
+        idata[i] = i + 100;
+
+    /* Set fill value attribute for data set 'FIXED1' using SDsetattr().
+       Same affect as using SDsetfillvalue(). */
+    fillval = -300;
+    status  = SDsetattr(sdid, "_FillValue", DFNT_INT32, 1, (void *)&fillval); /* can use SDsetfillvalue */
+    CHECK(status, FAIL, "SDsetattr");
+
+    /* Test get compression info when the data set is empty and not set
+       to be compressed */
+    {
+        comp_coder_t comp_type; /* type of compression */
+        comp_info    cinfo;     /* compression information */
+        status = SDgetcompinfo(sdid, &comp_type, &cinfo);
+        CHECK(status, FAIL, "SDgetcompinfo");
+        VERIFY(comp_type, COMP_CODE_NONE, "SDgetcompinfo");
+    }
+
+    /* end access to data set 'FIXED1' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* get index of dataset in file FILE1 called 'FIXED1' */
+    index = SDnametoindex(f1, "FIXED1");
+    CHECK(index, FAIL, "SDnametoindex");
+
+    /* Select data set 'FIXED1' based on it's index */
+    sdid = SDselect(f1, index);
+    CHECK(sdid, FAIL, "SDselect");
+
+    /* change the fill mode for the file back to writing out the fill
+       values. */
+    status = SDsetfillmode(f1, SD_FILL);
+    CHECK(status, FAIL, "SDsetfillmode");
+
+    /* Write data to data set 'FIXED1'.
+       Note that SD_FILL mode is on. */
+    start[0] = 2;
+    start[1] = 0;
+    end[0]   = 1;
+    end[1]   = 6;
+    status   = SDwritedata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDwritedata: (SD_FILL)");
+
+    /* Test get compression info when the data set is not empty and
+       compressed */
+    {
+        comp_coder_t comp_type; /* type of compression */
+        comp_info    cinfo;     /* compression information */
+        status = SDgetcompinfo(sdid, &comp_type, &cinfo);
+        CHECK(status, FAIL, "SDgetcompinfo");
+        VERIFY(comp_type, COMP_CODE_NONE, "SDgetcompinfo");
+    }
+
+    /* end access to data set 'FIXED1' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* set the fill mode for FILE1 to no-fill */
+    status = SDsetfillmode(f1, SD_NOFILL);
+    CHECK(status, FAIL, "SDsetfillmode (SD_NOFILL)");
+
+    /* create a data set 'FIXED' in file FILE1 */
+    sdid = SDcreate(f1, "FIXED", DFNT_INT32, 2, dimsize);
+    CHECK(sdid, FAIL, "SDcreate:Failed to create data set 'FIXED' in file FILE1");
+
+    for (int i = 0; i < 30; i++)
+        idata[i] = i + 100;
+
+    /* Set fill value for data set 'FIXED' using SDsetfillvalue() */
+    fillval = -300;
+    status  = SDsetfillvalue(sdid, (void *)&fillval);
+    CHECK(status, FAIL, "SDsetfillvalue");
+
+    /* write out the first 2 records to data set 'FIXED' with SD_NOFILL mode */
+    start[0] = 2;
+    start[1] = 0;
+    end[0]   = 1;
+    end[1]   = 6;
+    status   = SDwritedata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDwritedata: (SD_NOFILL)");
+
+    /* end access to data set 'FIXED' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* close file FILE1 */
+    status = SDend(f1);
+    CHECK(status, FAIL, "SDend");
+
+    /* open again, write record 4 with SD_FILL mode */
+    /* fill values already written out in the first SDwritedata,
+       fillmode changes should not affect the fill values */
+
+    /* open file FILE1 */
+    f1 = SDstart(FILE1, DFACC_RDWR);
+    CHECK(f1, FAIL, "SDstart: test1.hdf");
+
+    /* Set fill mode to SD_FILL */
+    status = SDsetfillmode(f1, SD_FILL);
+    CHECK(status, FAIL, "SDsetfillmode: (SD_FILL)");
+
+    /* get index of data set 'FIXED' */
+    index = SDnametoindex(f1, "FIXED");
+    CHECK(index, FAIL, "SDnametoindex: (FIXED)");
+
+    /* Select the data set 'FIXED' based on its index */
+    sdid = SDselect(f1, index);
+    CHECK(sdid, FAIL, "SDselect: (FIXED)");
+
+    /* Get its fill value */
+    status = SDgetfillvalue(sdid, &readval);
+    CHECK(status, FAIL, "SDgetfillvalue: (FIXED)");
+    VERIFY(readval, -300, "SDgetfillvalue");
+
+    /* Write record 4 */
+    start[0] = 4;
+    start[1] = 0;
+    end[0]   = 1;
+    end[1]   = 6;
+    status   = SDwritedata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDwritedata (SD_FILL)");
+
+    /* end access to data set 'FIXED' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* close file FILE1 */
+    status = SDend(f1);
+    CHECK(status, FAIL, "SDend");
+
+    /* read back and check fill values */
+
+    /* open file FILE1 back up */
+    f1 = SDstart(FILE1, DFACC_RDWR);
+    CHECK(f1, FAIL, "SDstart: test1.hdf");
+
+    /* get index of data set 'FIXED' */
+    index = SDnametoindex(f1, "FIXED");
+    CHECK(index, FAIL, "SDnametoindex (FIXED)");
+
+    /* Select the data set 'FIXED' based on its index */
+    sdid = SDselect(f1, index);
+    CHECK(sdid, FAIL, "SDselect (FIXED)");
+
+    /* read data back in from data set 'FIXED' */
+    start[0] = 0;
+    start[1] = 0;
+    end[0]   = 5;
+    end[1]   = 6;
+    status   = SDreaddata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDreaddata(FIXED)");
+
+    /* verify the data */
+    for (int i = 12; i < 18; i++) {
+        if ((idata[i] != 100 + (i - 12)) || (idata[i + 12] != 100 + (i - 12))) {
+            fprintf(stderr, "line %d, wrong value: should be %d, got %d %d\n", __LINE__, 100 + i - 12,
+                    (int)idata[i], (int)idata[i + 12]);
+            num_errs++;
+        }
+    }
+
+    for (int i = 18; i < 24; i++) {
+        if (idata[i] == fillval) {
+            fprintf(stderr, "line %d, wrong value: should not be %d, got %d\n", __LINE__, (int)fillval,
+                    (int)idata[i]);
+            num_errs++;
+        }
+    }
+
+    /* end access to data set 'FIXED' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* read back in data set 'FIXED1' , with fill values */
+
+    /* get index of data set 'FIXED1' from file FILE1 */
+    index = SDnametoindex(f1, "FIXED1");
+    CHECK(index, FAIL, "SDnametoindex (FIXED1)");
+
+    /* select dataset 'FIXED1' based on its index in the file */
+    sdid = SDselect(f1, index);
+    CHECK(sdid, FAIL, "SDselect (FIXED1)");
+
+    /* read data from data set 'FIXED1' */
+    start[0] = 0;
+    start[1] = 0;
+    end[0]   = 5;
+    end[1]   = 6;
+    status   = SDreaddata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDreaddata(FIXED)");
+
+    /* verify the data */
+    for (int i = 12; i < 18; i++) {
+        if (idata[i] != (100 + (i - 12))) {
+            fprintf(stderr, "line %d, wrong value: should be %d, got %d \n", __LINE__, 100 + i - 12,
+                    (int)idata[i]);
+            num_errs++;
+        }
+    }
+
+    for (int i = 18; i < 24; i++) {
+        if (idata[i] != fillval) {
+            fprintf(stderr, "line %d, wrong value: should be %d, got %d\n", __LINE__, (int)fillval,
+                    (int)idata[i]);
+            num_errs++;
+        }
+    }
+
+    /* end access to data set 'FIXED1' in file FILE1 */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* close file FILE1 */
+    status = SDend(f1);
+    CHECK(status, FAIL, "SDend");
+
+    /* Return the number of errors that's been kept track of so far */
+    return num_errs;
+}
+
+/***************************************************************************
+   Name: test_unlim_fillvalue() - tests fill value feature of data sets
+
+   Description:
+        Test data sets with SD_FILL and SD_NOFILL.
+
+   Return value:
+        The number of errors occurred in this routine.
+
+****************************************************************************/
+static int
+test_unlim_fillvalue()
+{
+    int32 f1;
+    int32 sdid;
+    int32 dimsize[RANK]; /* dimension sizes */
+    int32 idata[100];
+    int32 index;
+    int32 start[2], end[2];
+    int32 fillval = 0;
+    int   status;
+    int   num_errs = 0; /* number of errors so far */
+
+    /*
+     * test UNLIMITED size SDS
+     */
+
+    /* open file FILE1 */
+    f1 = SDstart(FILE1, DFACC_RDWR);
+    CHECK(f1, FAIL, "SDstart (file1)");
+
+    /* set fill mode to no-fill */
+    status = SDsetfillmode(f1, SD_NOFILL);
+    CHECK(status, FAIL, "SDsetfillmode (SD_NOFILL)");
+
+    /* Set first dimension to UNLIMITED.
+       Create data set 'UNLIMITED_SDS' in file FILE1 */
+    dimsize[0] = SD_UNLIMITED;
+    dimsize[1] = 6;
+    sdid       = SDcreate(f1, "UNLIMITED_SDS", DFNT_INT32, 2, dimsize);
+    CHECK(sdid, FAIL, "SDcreate:Failed to create data set 'UNLIMITED_SDS' in file FILE1");
+
+    for (int i = 0; i < 24; i++)
+        idata[i] = i;
+
+    /* Set fill value for data set 'UNLIMITED_SDS' */
+    fillval = -300;
+    status  = SDsetfillvalue(sdid, (void *)&fillval);
+    CHECK(status, FAIL, "SDsetfillvalue");
+
+    /* write out the third record with SD_NOFILL mode on */
+    start[0] = 2;
+    start[1] = 0;
+    end[0]   = 1;
+    end[1]   = 6;
+    status   = SDwritedata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDwritedata: (SD_NOFILL, UNLIMITED)");
+
+    /* end access to data set 'UNLIMITED_SDS' in file FILE1 */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* Close file FILE1 */
+    status = SDend(f1);
+    CHECK(status, FAIL, "SDend");
+
+    /* open again, write record 4 with SD_FILL mode */
+
+    /* open file FILE1 again */
+    f1 = SDstart(FILE1, DFACC_RDWR);
+    CHECK(f1, FAIL, "SDstart: test1.hdf");
+
+    /* set fill mode to SD_FILL */
+    status = SDsetfillmode(f1, SD_FILL);
+    CHECK(status, FAIL, "SDsetfillmode: (SD_FILL)");
+
+    /* get index of data set 'UNLIMITED_SDS' */
+    index = SDnametoindex(f1, "UNLIMITED_SDS");
+    CHECK(index, FAIL, "SDnametoindex: (UNLIMITED)");
+
+    /* select data set 'UNLIMITED_SDS' based on its index in the file */
+    sdid = SDselect(f1, index);
+    CHECK(sdid, FAIL, "SDselect: (UNLIMITED)");
+
+    /* write 4?th record to data set */
+    start[0] = 4;
+    start[1] = 0;
+    end[0]   = 1;
+    end[1]   = 6;
+    status   = SDwritedata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDwritedata: (SD_FILL)");
+
+    /* end access to data set 'UNLIMITED_SDS' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* close file FILE1 */
+    status = SDend(f1);
+    CHECK(status, FAIL, "SDend");
+
+    /* read back and check fill values */
+
+    /* open file FILE1 again */
+    f1 = SDstart(FILE1, DFACC_RDWR);
+    CHECK(f1, FAIL, "SDstart: (test1.hdf)");
+
+    /* get index of data set 'UNLIMITED_SDS' */
+    index = SDnametoindex(f1, "UNLIMITED_SDS");
+    CHECK(index, FAIL, "SDnametoindex: (UNLIMITED_SDS)");
+
+    /* select data set 'UNLIMITED_SDS' based on it's index in the file */
+    sdid = SDselect(f1, index);
+    CHECK(sdid, FAIL, "SDselect: (UNLIMITED_SDS)");
+
+    /* read data from data set 'UNLIMITED_SDS' */
+    start[0] = 0;
+    start[1] = 0;
+    end[0]   = 5;
+    end[1]   = 6;
+    status   = SDreaddata(sdid, start, NULL, end, (void *)idata);
+    CHECK(status, FAIL, "SDwritedata(NO_FILL)");
+
+    /* verify the data */
+    for (int i = 12; i < 18; i++) {
+        if ((idata[i] != (i - 12)) || (idata[i + 12] != (i - 12))) {
+            fprintf(stderr, "line %d, wrong value for %d: should be %d, got %d\n", __LINE__, i - 12,
+                    (int)idata[i], (int)idata[i + 12]);
+            num_errs++;
+        }
+    }
+
+    for (int i = 18; i < 24; i++) {
+        if (idata[i] != fillval) {
+            fprintf(stderr, "line %d, wrong value: should be %d, got %d\n", __LINE__, (int)fillval,
+                    (int)idata[i]);
+            num_errs++;
+        }
+    }
+
+    /* end access to data set 'UNLIMITED_SDS' */
+    status = SDendaccess(sdid);
+    CHECK(status, FAIL, "SDendaccess");
+
+    /* close file FILE1 */
+    status = SDend(f1);
+    CHECK(status, FAIL, "SDend");
+
+    /* Return the number of errors that's been kept track of so far */
+    return num_errs;
+}
 
 /* Test driver for testing various SDS' properties. */
 extern int
 test_SDSprops()
 {
-    intn num_errs = 0; /* number of errors */
+    int num_errs = 0; /* number of errors */
 
     /* Output message about test being performed */
     TESTING("various SDS' properties (tsdsprops.c)");
@@ -759,6 +1183,8 @@ test_SDSprops()
     num_errs = num_errs + test_unlim_inloop();
     num_errs = num_errs + test_valid_args();
     num_errs = num_errs + test_valid_args2();
+    num_errs = num_errs + test_fillvalue();
+    num_errs = num_errs + test_unlim_fillvalue();
 
     if (num_errs == 0)
         PASSED();

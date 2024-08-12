@@ -26,7 +26,7 @@
    below.  Functions which depend on other functionality should
    be placed below the InitTest() call for the base functionality
    testing.
-   Each test module should include tproto.h and define a unique
+   Each test module should include testhdf.h and define a unique
    set of names for test files they create.
 
    BUGS/LIMITATIONS
@@ -42,8 +42,8 @@
 /* Internal Variables */
 static int Index = 0;
 
-/* ANY new test needs to have a prototype in tproto.h */
-#include "tproto.h"
+/* ANY new test needs to have a prototype in testhdf.h */
+#include "testhdf.h"
 
 struct TestStruct {
     int  NumErrors;
@@ -77,7 +77,7 @@ InitTest(const char *TheName, void (*TheCall)(void), const char *TheDescr)
 static void
 usage(void)
 {
-    intn i;
+    int i;
 
     printf("Usage: testhdf [-v[erbose] (l[ow]|m[edium]|h[igh]|0-10)] \n");
     printf("               [-[e]x[clude] name+] \n");
@@ -91,7 +91,7 @@ usage(void)
     printf("verbose   controls the amount of information displayed\n");
     printf("exclude   to exclude tests by name\n");
     printf("only      to name tests which should be run\n");
-    printf("begin     start at the name of the test givin\n");
+    printf("begin     start at the name of the test given\n");
     printf("summary   prints a summary of test results at the end\n");
     printf("cleanoff  does not delete *.hdf files after execution of tests\n");
     printf("nocaching do not turn on low-level DD caching\n");
@@ -131,7 +131,8 @@ main(int argc, char *argv[])
 #endif
     InitTest("vers", test_vers, "VERSION OF LIBRARY");
     InitTest("hfile", test_hfile, "HFILE");
-    InitTest("hfile1", test_hfile1, "HFILE LIMITS");
+    InitTest("hfile_atexit", test_hfile_atexit, "HFILE ATEXIT");
+    InitTest("hfile_limits", test_hfile_limits, "HFILE LIMITS");
     InitTest("hblocks", test_hblocks, "HBLOCKS");
     InitTest("extelt", test_hextelt, "EXTERNAL ELEMENTS");
     InitTest("comp", test_comp, "COMPRESSED ELEMENTS");

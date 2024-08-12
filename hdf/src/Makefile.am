@@ -14,9 +14,9 @@ CSOURCES = atom.c bitvect.c cdeflate.c cnbit.c cnone.c crle.c cskphuff.c \
            cszip.c df24.c dfan.c dfcomp.c dfconv.c dfgr.c dfgroup.c \
            dfimcomp.c dfjpeg.c dfknat.c \
            dfkswap.c dfp.c dfr8.c dfrle.c dfsd.c dfstubs.c \
-           dfufp2i.c dfunjpeg.c dfutil.c dynarray.c glist.c hbitio.c \
+           dfufp2i.c dfunjpeg.c dfutil.c dynarray.c hbitio.c \
            hblocks.c hbuffer.c hchunks.c hcomp.c hcompri.c hdatainfo.c \
-           hdfalloc.c herr.c hextelt.c hfile.c hfiledd.c hkit.c linklist.c \
+           hdfalloc.c herr.c hextelt.c hfile.c hfile_atexit.c hfiledd.c hkit.c \
            mcache.c mfan.c mfgr.c mstdio.c tbbt.c vattr.c vconv.c vg.c \
            vgp.c vhi.c vio.c vparse.c vrw.c vsfld.c
 
@@ -33,6 +33,8 @@ else
 libdf_la_SOURCES = $(CSOURCES)
 include_HEADERS = $(CHEADERS)
 endif
+
+libdf_la_LIBADD = @LIBS@
 
 # The following is a workaround. Since Fortran is included in this 
 # Makefile.am, automake will always try to use the Fortran linker, even when

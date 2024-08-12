@@ -54,12 +54,12 @@
 
 #include "hdftest.h"
 
-static intn test_nonspecial_SDSs();
-static intn test_compressed_SDSs();
-static intn test_empty_SDSs();
-static intn test_chunked_partial();
-static intn test_chkcmp_SDSs();
-static intn test_extend_SDSs();
+static int test_nonspecial_SDSs();
+static int test_compressed_SDSs();
+static int test_empty_SDSs();
+static int test_chunked_partial();
+static int test_chkcmp_SDSs();
+static int test_extend_SDSs();
 
 #define SIMPLE_FILE "datainfo_simple.hdf" /* data file */
 #define X_LENGTH    10
@@ -97,7 +97,7 @@ alloc_info(t_hdf_datainfo_t *info, unsigned info_count, int32 n_dims)
             return -1;
     }
 
-    info->dimsizes = (int32 *)malloc(n_dims * sizeof(int32));
+    info->dimsizes = (int32 *)malloc((size_t)n_dims * sizeof(int32));
     if (info->dimsizes == NULL)
         return -1;
 
@@ -154,7 +154,7 @@ comp_n_values(int32 rank, int32 *dimsizes)
 #define LENGTH2_Y 8
 #define LENGTH3_X 21
 
-static intn
+static int
 test_nonspecial_SDSs()
 {
     int32            sd_id, sds_id;
@@ -163,9 +163,9 @@ test_nonspecial_SDSs()
     float            data2[LENGTH2_X][LENGTH2_Y];
     char             data3[LENGTH3_X];
     t_hdf_datainfo_t sds1_info, sds2_info, sds3_info;
-    uintn            info_count = 0;
-    intn             status;
-    intn             num_errs = 0; /* number of errors so far */
+    unsigned         info_count = 0;
+    int              status;
+    int              num_errs = 0; /* number of errors so far */
 
     /* Create the file and initialize the SD interface */
     sd_id = SDstart(SIMPLE_FILE, DFACC_CREATE);
@@ -226,7 +226,7 @@ test_nonspecial_SDSs()
 
     for (int ii = 0; ii < LENGTH2_X; ii++)
         for (int jj = 0; jj < LENGTH2_Y; jj++)
-            data2[ii][jj] = 500.50 * (ii + jj);
+            data2[ii][jj] = 500.50F * (ii + jj);
 
     starts[0] = 0;
     starts[1] = 0;
@@ -384,8 +384,8 @@ test_nonspecial_SDSs()
         }
 
         /* Allocate buffers for SDS' data */
-        readibuf         = (int32 *)malloc(sds1_info.n_values * sizeof(int32));
-        readibuf_swapped = (int32 *)malloc(sds1_info.n_values * sizeof(int32));
+        readibuf         = (int32 *)malloc((size_t)sds1_info.n_values * sizeof(int32));
+        readibuf_swapped = (int32 *)malloc((size_t)sds1_info.n_values * sizeof(int32));
         /* Read in this block of data */
         readlen = read(fd, (void *)readibuf, (size_t)sds1_info.lengths[0]);
         CHECK(readlen, FAIL, "DFKconvert");
@@ -413,8 +413,8 @@ test_nonspecial_SDSs()
         }
 
         /* Allocate buffers for SDS' data */
-        readfbuf         = (float32 *)malloc(sds2_info.n_values * sizeof(float32));
-        readfbuf_swapped = (float32 *)malloc(sds2_info.n_values * sizeof(float32));
+        readfbuf         = (float32 *)malloc((size_t)sds2_info.n_values * sizeof(float32));
+        readfbuf_swapped = (float32 *)malloc((size_t)sds2_info.n_values * sizeof(float32));
         /* Read in this block of data */
         readlen = read(fd, (void *)readfbuf, (size_t)sds2_info.lengths[0]);
         CHECK(readlen, FAIL, "DFKconvert");
@@ -445,8 +445,8 @@ test_nonspecial_SDSs()
         }
 
         /* Allocate buffers for SDS' data */
-        readibuf         = (int32 *)malloc(sds3_info.n_values * sizeof(int32));
-        readibuf_swapped = (int32 *)malloc(sds3_info.n_values * sizeof(int32));
+        readibuf         = (int32 *)malloc((size_t)sds3_info.n_values * sizeof(int32));
+        readibuf_swapped = (int32 *)malloc((size_t)sds3_info.n_values * sizeof(int32));
         /* Read in this block of data */
         readlen = read(fd, (void *)readibuf, (size_t)sds3_info.lengths[0]);
         CHECK(readlen, FAIL, "DFKconvert");
@@ -502,7 +502,7 @@ test_nonspecial_SDSs()
  BMR - Jul 2010
  ****************************************************************************/
 #define COMP_FILE "datainfo_cmp.hdf" /* data file */
-static intn
+static int
 test_compressed_SDSs()
 {
     int32            sd_id, sds_id;
@@ -514,8 +514,8 @@ test_compressed_SDSs()
     char             data3[LENGTH3_X];
     t_hdf_datainfo_t sds1_info, sds2_info, sds3_info;
     int32            pixels_per_scanline;
-    uintn            info_count = 0;
-    intn             status;
+    unsigned         info_count = 0;
+    int              status;
     int              ii, jj;
     int              num_errs = 0; /* number of errors so far */
 
@@ -568,7 +568,7 @@ test_compressed_SDSs()
 
     for (ii = 0; ii < LENGTH2_X; ii++)
         for (jj = 0; jj < LENGTH2_Y; jj++)
-            data2[ii][jj] = 500.50 * (ii + jj);
+            data2[ii][jj] = 500.50F * (ii + jj);
 
 #ifdef H4_HAVE_SZIP_ENCODER
     /*
@@ -834,16 +834,16 @@ test_compressed_SDSs()
 #define NUM_SDS     3
 #define NODATA_FILE "datainfo_nodata.hdf" /* data file */
 
-static intn
+static int
 test_empty_SDSs()
 {
     int32        sd_id, sds_id;
     int32        dimsizes[RANK];
-    uintn        info_count = 0;
+    unsigned     info_count = 0;
     comp_coder_t comp_type; /* Compression flag */
     comp_info    c_info;    /* Compression structure */
     int          ii;
-    intn         status;
+    int          status;
     int          num_errs = 0; /* number of errors so far */
 
     /* Use the same file as in test_compressed_SDSs */
@@ -946,19 +946,19 @@ test_empty_SDSs()
  BMR - Jul 2010
  ****************************************************************************/
 #define CHK_FILE "datainfo_chk.hdf" /* data file */
-static intn
+static int
 test_chunked_partial()
 {
     int32            sd_id, sds_id, sds_index;
     int32            dimsizes[RANK], origin[RANK], starts[RANK], rank = 0, edges[RANK];
     HDF_CHUNK_DEF    c_def; /* Chunking definitions */
-    uintn            info_count = 0;
+    unsigned         info_count = 0;
     t_hdf_datainfo_t sds_info;
     int32            data[Y_LENGTH][X_LENGTH];
     int              fd; /* for open */
     int              chk_num;
     int              num_errs = 0; /* number of errors so far */
-    intn             status;
+    int              status;
 
     /* Declare chunks data type and initialize some of them. */
     int32 chunk_1dim[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
@@ -1092,8 +1092,8 @@ test_chunked_partial()
         }
 
         /* Allocate buffers for SDS' data */
-        readibuf         = (int32 *)malloc(sds_info.lengths[chk_num]);
-        readibuf_swapped = (int32 *)malloc(sds_info.lengths[chk_num]);
+        readibuf         = (int32 *)malloc((size_t)sds_info.lengths[chk_num]);
+        readibuf_swapped = (int32 *)malloc((size_t)sds_info.lengths[chk_num]);
         /* readibuf = (int32 *) malloc(sds_info.n_values * sizeof(int32));
          readibuf_swapped = (int32 *) malloc(sds_info.n_values * sizeof(int32));
          */
@@ -1133,7 +1133,7 @@ test_chunked_partial()
  * data blocks.
  */
 #define CHKCMP_FILE "datainfo_chkcmp.hdf" /* data file */
-static intn
+static int
 test_chkcmp_SDSs()
 {
     int32            sd_id, sds_id, sds_index;
@@ -1144,8 +1144,8 @@ test_chkcmp_SDSs()
     t_hdf_datainfo_t sds_info, cmpsds_info;
     int32            fill_value = 0; /* Fill value */
     int32            chk_coord[2];
-    uintn            info_count = 0;
-    intn             status;
+    unsigned         info_count = 0;
+    int              status;
     int              num_errs = 0; /* number of errors so far */
 
     /* Declare chunks data type and initialize some of them. */
@@ -1351,7 +1351,7 @@ test_chkcmp_SDSs()
  */
 #define EXTEND_FILE "datainfo_extend.hdf" /* data file */
 #define BLOCK_SIZE  400
-static intn
+static int
 test_extend_SDSs()
 {
     int32            sd_id, sds_id, sds_index;
@@ -1362,10 +1362,10 @@ test_extend_SDSs()
     int32            data3[Y_LENGTH][X_LENGTH];
     float            fdata[Y_LENGTH];
     int32            output[Y_LENGTH * 3][X_LENGTH];
-    uintn            info_count = 0;
+    unsigned         info_count = 0;
     t_hdf_datainfo_t sds_info;
     int32            block_size = 0;
-    intn             status;
+    int              status;
     int              i, j, kk;
     int              num_errs = 0; /* number of errors so far */
 

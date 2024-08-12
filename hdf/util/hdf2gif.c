@@ -34,7 +34,7 @@ putword(int w, FILE *fp)
 int
 main(int argc, char **argv)
 {
-    intn  status;                  /* status for functions returning an intn */
+    int   status;                  /* status for functions returning an int */
     int32 file_id;                 /* HDF file identifier */
     int32 gr_id;                   /* GR interface identifier */
     int32 ri_id, pal_id, start[2]; /* start position to write for each dimension */
@@ -169,7 +169,7 @@ main(int argc, char **argv)
         }
         /* End BUG FIX 601 */
 
-        Image  = (BYTE *)malloc(dim_sizes[0] * dim_sizes[1]);
+        Image  = (BYTE *)malloc((size_t)(dim_sizes[0] * dim_sizes[1]));
         status = GRreadimage(ri_id, start, stride, dim_sizes, Image);
 
         /* If the first image does not have a palette, I make my own global color table

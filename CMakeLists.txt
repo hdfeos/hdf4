@@ -1,21 +1,5 @@
-cmake_minimum_required (VERSION 3.18)
-project (HDF4 C)
-
-if (POLICY CMP0074)
-  # find_package() uses <PackageName>_ROOT variables.
-  cmake_policy (SET CMP0074 NEW)
-endif ()
-
-if (POLICY CMP0083)
-  # To control generation of Position Independent Executable (PIE) or not,
-  # some flags are required at link time.
-  cmake_policy (SET CMP0083 NEW)
-endif ()
-
-# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
-    cmake_policy(SET CMP0135 NEW)
-endif()
+cmake_minimum_required (VERSION 3.18...3.24)
+project (HDF4 LANGUAGES C)
 
 #-----------------------------------------------------------------------------
 # Instructions for use : Normal Build
@@ -114,7 +98,7 @@ mark_as_advanced (HDF4_EXTERNAL_LIB_PREFIX)
 #   set (HDF4_INCLUDE_DIR
 #       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.3.0/hdf/src
 #       ${PROJECT_BINARY_DIR}/Utilities/hdf4.3.0
-#       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.3.0/mfhdf/libsrc
+#       ${PROJECT_SOURCE_DIR}/Utilities/hdf4.3.0/mfhdf/src
 #   )
 #
 #-----------------------------------------------------------------------------
@@ -204,7 +188,7 @@ set (HDF_CONFIG_DIR           ${HDF4_SOURCE_DIR}/config)
 set (HDF_RESOURCES_DIR        ${HDF4_SOURCE_DIR}/config/cmake)
 set (HDF4_HDFSOURCE_DIR       ${HDF4_SOURCE_DIR}/hdf/src)
 set (HDF4_HDF_TESTSOURCE_DIR  ${HDF4_SOURCE_DIR}/hdf/test)
-set (HDF4_MFHDFSOURCE_DIR     ${HDF4_SOURCE_DIR}/mfhdf/libsrc)
+set (HDF4_MFHDFSOURCE_DIR     ${HDF4_SOURCE_DIR}/mfhdf/src)
 set (HDF4_MFHDF_TEST_DIR      ${HDF4_SOURCE_DIR}/mfhdf/test)
 set (HDF4_MFHDF_UTIL_DIR      ${HDF4_SOURCE_DIR}/mfhdf/util)
 set (HDF4_MFHDF_FORTRAN_DIR   ${HDF4_SOURCE_DIR}/mfhdf/fortran)
@@ -212,9 +196,9 @@ set (HDF4_JAVA_JNI_SRC_DIR         ${HDF4_SOURCE_DIR}/java/src/jni)
 set (HDF4_JAVA_HDF_SRC_DIR         ${HDF4_SOURCE_DIR}/java/src/hdf)
 set (HDF4_JAVA_TEST_SRC_DIR        ${HDF4_SOURCE_DIR}/java/test)
 set (HDF4_JAVA_LIB_DIR             ${HDF4_SOURCE_DIR}/java/lib)
-set (HDF4_JAVA_LOGGING_JAR         ${HDF4_SOURCE_DIR}/java/lib/slf4j-api-1.7.33.jar)
-set (HDF4_JAVA_LOGGING_NOP_JAR     ${HDF4_SOURCE_DIR}/java/lib/ext/slf4j-nop-1.7.33.jar)
-set (HDF4_JAVA_LOGGING_SIMPLE_JAR  ${HDF4_SOURCE_DIR}/java/lib/ext/slf4j-simple-1.7.33.jar)
+set (HDF4_JAVA_LOGGING_JAR         ${HDF4_SOURCE_DIR}/java/lib/slf4j-api-2.0.6.jar)
+set (HDF4_JAVA_LOGGING_NOP_JAR     ${HDF4_SOURCE_DIR}/java/lib/ext/slf4j-nop-2.0.6.jar)
+set (HDF4_JAVA_LOGGING_SIMPLE_JAR  ${HDF4_SOURCE_DIR}/java/lib/ext/slf4j-simple-2.0.6.jar)
 set (HDF4_DOXYGEN_DIR              ${HDF4_SOURCE_DIR}/doxygen)
 
 set (HDF4_SRC_INCLUDE_DIRS ${HDF4_HDFSOURCE_DIR} ${HDF4_MFHDFSOURCE_DIR})
@@ -231,9 +215,9 @@ string (REGEX REPLACE ".*#define[ \t]+LIBVER_MINOR[ \t]+([0-9]*).*$"
     "\\1" H4_VERS_MINOR ${_hfile_h_contents})
 string (REGEX REPLACE ".*#define[ \t]+LIBVER_RELEASE[ \t]+([0-9]*).*$"
     "\\1" H4_VERS_RELEASE ${_hfile_h_contents})
-string (REGEX REPLACE ".*#define[ \t]+LIBVER_SUBRELEASE[ \t]+\"([0-9A-Za-z.]*)\".*$"
+string (REGEX REPLACE ".*#define[ \t]+LIBVER_SUBRELEASE[ \t]+\"([0-9A-Za-z._-]*)\".*$"
     "\\1" H4_VERS_SUBRELEASE ${_hfile_h_contents})
-#message (STATUS "VERSION: ${H4_VERS_MAJOR}.${H4_VERS_MINOR}.${H4_VERS_RELEASE}-${H4_VERS_SUBRELEASE}")
+message (TRACE "VERSION: ${H4_VERS_MAJOR}.${H4_VERS_MINOR}.${H4_VERS_RELEASE}-${H4_VERS_SUBRELEASE}")
 
 #-----------------------------------------------------------------------------
 # parse the full soversion number from config/lt_vers.am and include in H4_SOVERS_INFO
@@ -460,7 +444,7 @@ endif ()
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_definitions (-DHAVE_CONFIG_H)
+add_compile_definitions (HAVE_CONFIG_H)
 
 #-----------------------------------------------------------------------------
 # Temporary disable optimization flag
@@ -558,7 +542,6 @@ include (CMakeFilters.cmake)
 # Options to build tools
 #-----------------------------------------------------------------------------
 option (HDF4_BUILD_TOOLS  "Build HDF4 Tools" ON)
-option (HDF4_BUILD_NETCDF_TOOLS "Build HDF4 versions of ncdump and ncgen" ON)
 
 #-----------------------------------------------------------------------------
 # Option to Build HDF4 versions of NetCDF-3 APIS
@@ -573,13 +556,13 @@ endif ()
 # Add the HDF4 Library Target to the build
 #-----------------------------------------------------------------------------
 add_subdirectory (hdf/src)
-add_subdirectory (mfhdf/libsrc)
+add_subdirectory (mfhdf/src)
 
 #-----------------------------------------------------------------------------
 # Option to build documentation
 #-----------------------------------------------------------------------------
 option (HDF4_BUILD_DOC "Build documentation" OFF)
-if (HDF4_BUILD_DOC AND EXISTS "${HDF4_DOXYGEN_DIR}" AND IS_DIRECTORY "${HDF4_DOXYGEN_DIR}")
+if (HDF4_BUILD_DOC AND IS_DIRECTORY "${HDF4_DOXYGEN_DIR}")
 # check if Doxygen is installed
   find_package(Doxygen)
   if (DOXYGEN_FOUND)
@@ -615,10 +598,10 @@ if (BUILD_TESTING)
   endif ()
 
   if (NOT HDF4_EXTERNALLY_CONFIGURED)
-    if (EXISTS "${HDF4_SOURCE_DIR}/hdf/test" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/hdf/test")
+    if (IS_DIRECTORY "${HDF4_SOURCE_DIR}/hdf/test")
       add_subdirectory (hdf/test)
     endif ()
-    if (EXISTS "${HDF4_SOURCE_DIR}/mfhdf/test" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/mfhdf/test")
+    if (IS_DIRECTORY "${HDF4_SOURCE_DIR}/mfhdf/test")
       add_subdirectory (mfhdf/test)
     endif ()
   endif ()
@@ -635,7 +618,7 @@ endif ()
 # Set default name mangling : overridden by Fortran detection in fortran dir
 set (H4_F77_FUNC "H4_F77_FUNC(name,NAME) name ## _")
 set (H4_F77_FUNC_ "H4_F77_FUNC_(name,NAME) name ## __")
-if (EXISTS "${HDF4_SOURCE_DIR}/mfhdf/fortran" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/mfhdf/fortran")
+if (IS_DIRECTORY "${HDF4_SOURCE_DIR}/mfhdf/fortran")
   option (HDF4_BUILD_FORTRAN "Build FORTRAN support" OFF)
   if (HDF4_BUILD_FORTRAN)
     if (WIN32)
@@ -663,7 +646,7 @@ add_subdirectory (mfhdf)
 #-----------------------------------------------------------------------------
 # Option to build HDF4 Java Library
 #-----------------------------------------------------------------------------
-if (EXISTS "${HDF4_SOURCE_DIR}/java" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/java")
+if (IS_DIRECTORY "${HDF4_SOURCE_DIR}/java")
   option (HDF4_BUILD_JAVA "Build Java HDF Library" OFF)
   if (HDF4_BUILD_JAVA)
     if (NOT BUILD_SHARED_LIBS)
@@ -682,7 +665,7 @@ configure_file (${HDF_RESOURCES_DIR}/h4config.h.in ${PROJECT_BINARY_DIR}/h4confi
 #-----------------------------------------------------------------------------
 # Option to build examples
 #-----------------------------------------------------------------------------
-if (EXISTS "${HDF4_SOURCE_DIR}/HDF4Examples" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/HDF4Examples")
+if (IS_DIRECTORY "${HDF4_SOURCE_DIR}/HDF4Examples")
   option (HDF4_BUILD_EXAMPLES  "Build HDF4 Library Examples" ON)
   if (HDF4_BUILD_EXAMPLES)
     include (${HDF_RESOURCES_DIR}/HDF4ExampleCache.cmake)

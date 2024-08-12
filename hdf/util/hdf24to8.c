@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 
     size = x_dim * y_dim;
 
-    if ((r24 = (UCHAR *)malloc(size * 3)) == NULL) {
+    if ((r24 = (UCHAR *)malloc((size_t)size * 3)) == NULL) {
         fprintf(stderr, "error: malloc to hold r24 image failed\n");
         exit(-1);
     }
@@ -88,7 +88,7 @@ main(int argc, char *argv[])
         exit(-1);
     }
 
-    if ((r8 = (UCHAR *)malloc(size)) == NULL) {
+    if ((r8 = (UCHAR *)malloc((size_t)size)) == NULL) {
         fprintf(stderr, "error: malloc to hold r8 image failed\n");
         exit(-1);
     }
@@ -175,12 +175,12 @@ r24r8(int32 xres, int32 yres, UCHAR *dat24, UCHAR *dat8, int cres, UCHAR *cdat)
     dip = dat24;
     dop = dat8;
 
-    for (xct = (intn)(3 * xres); --xct >= 0;)
+    for (xct = (int)(3 * xres); --xct >= 0;)
         *cp++ = (UINT)*dip++;
 
     for (yct = 0; yct < (yres - 1); yct++) {
         np = idat[(yct + 1) % 2];
-        for (xct = (intn)(3 * xres); --xct >= 0;)
+        for (xct = (int)(3 * xres); --xct >= 0;)
             *np++ = (UINT)*dip++;
 
         cp = idat[yct % 2];

@@ -109,7 +109,6 @@ endif ()
 #  Library checks
 #-----------------------------------------------------------------------------
 if (MINGW OR NOT WINDOWS)
-  # MSVC does not need to link to the math library
   CHECK_LIBRARY_EXISTS_CONCAT ("m" ceil     ${HDF_PREFIX}_HAVE_LIBM)
   CHECK_LIBRARY_EXISTS_CONCAT ("ws2_32" WSAStartup  ${HDF_PREFIX}_HAVE_LIBWS2_32)
   CHECK_LIBRARY_EXISTS_CONCAT ("wsock32" gethostbyname ${HDF_PREFIX}_HAVE_LIBWSOCK32)
@@ -143,6 +142,11 @@ if (MINGW OR NOT WINDOWS)
 
     set (CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS} ${HDF_EXTRA_FLAGS})
   endif ()
+endif ()
+
+if (CYGWIN)
+  set (CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE")
+  add_definitions ("-D_GNU_SOURCE")
 endif ()
 
 add_definitions (${HDF_EXTRA_FLAGS})

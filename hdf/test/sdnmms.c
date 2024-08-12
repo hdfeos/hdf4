@@ -11,7 +11,7 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "tproto.h"
+#include "testhdf.h"
 
 static float64 f64[10][10], tf64[10][10];
 static float64 f64scale[10], tf64scale[10];
@@ -57,7 +57,7 @@ void
 test_sdnmms(void)
 {
     int   i, j, err, err1, err2, ret;
-    intn  rank;
+    int   rank;
     int32 dims[2];
 
     rank    = 2;

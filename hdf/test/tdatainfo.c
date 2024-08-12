@@ -27,7 +27,7 @@
 
 #include "hdf.h"
 #include "tdatainfo.h"
-#include "tproto.h"
+#include "testhdf.h"
 
 static void test_simple_vs();
 static void test_append_vs();
@@ -57,8 +57,8 @@ typedef struct {
 /* Functions to access t_hdfdatainfo_t, defined in ./tdatainfo.h */
 
 /* alloc_info is a utility function that allocates t_hdf_datainfo_t's members*/
-intn
-alloc_info(t_hdf_datainfo_t *info, uintn info_count)
+int
+alloc_info(t_hdf_datainfo_t *info, unsigned info_count)
 {
     info->offsets = (int32 *)malloc(info_count * sizeof(int32));
     if (info->offsets == NULL)
@@ -123,9 +123,9 @@ test_simple_vs()
     char  data_buf2[N_RECORDS] = {'H', '4', 'M', 'A', 'P'};
     int16 rec_num;        /* current record number */
     int32 offset, length; /* offset/length buffers for single block of data */
-    intn  n_blocks;       /* number of blocks a vdata has */
+    int   n_blocks;       /* number of blocks a vdata has */
     int32 status;         /* Status values from routines */
-    intn  status_n;       /* Status values from routines */
+    int   status_n;       /* Status values from routines */
 
     /* Open the HDF file and initialize the interface. */
     fid = Hopen(SIMPLE_FILE, DFACC_CREATE, 0);
@@ -308,10 +308,10 @@ test_append_vs()
         data_buf0[N_RECORDS][N_VALS_PER_REC_1], /* for "Very Simple Vdata" */
         data_buf1[N_RECORDS][N_VALS_PER_REC_2]; /* for first vdata's data */
     int16            rec_num;                   /* current record number */
-    intn             n_blocks;
+    int              n_blocks;
     t_hdf_datainfo_t vs_info;
     int32            status;   /* Status values from routines */
-    intn             status_n; /* Status values from routines */
+    int              status_n; /* Status values from routines */
 
     /* Open the HDF file. */
     fid = Hopen(APPEND_FILE, DFACC_CREATE, 0);
@@ -494,13 +494,13 @@ test_append_vs()
         SUCCEED/FAIL
   BMR - Jul 2010
 ********************************************************************/
-intn
+int
 readnoHDF_char(const char *filename, const int32 offset, const int32 length, const char *orig_buf)
 {
     FILE  *fd;          /* file descriptor */
     size_t readlen = 0; /* number of bytes actually read */
     char  *readcbuf;
-    intn   ret_value = SUCCEED;
+    int    ret_value = SUCCEED;
 
     /* Open the file for reading without SD API */
     fd = fopen(filename, "r");
@@ -516,14 +516,14 @@ readnoHDF_char(const char *filename, const int32 offset, const int32 length, con
     }
 
     /* Allocate buffers for SDS' data */
-    readcbuf = (char *)malloc(length * sizeof(char));
+    readcbuf = (char *)malloc((size_t)length * sizeof(char));
     if (readcbuf == NULL) {
         fprintf(stderr, "readnoHDF_char: allocation readcbuf failed\n");
         ret_value = FAIL;
     }
 
     /* Read in this block of data */
-    readlen = fread((void *)readcbuf, 1, length, fd);
+    readlen = fread((void *)readcbuf, 1, (size_t)length, fd);
     if (readlen > 0) {
         /* Compare data read without HDF4 lib against the original buffer */
         if (strncmp(readcbuf, orig_buf, readlen) != 0)
@@ -559,7 +559,7 @@ readnoHDF_char(const char *filename, const int32 offset, const int32 length, con
                                     currently only 1, but will be adjusted after
                                     the last parameter become arrays of strings
         t_ann_info_t *ann_info	OUT: structure that holds ann data info
-        intn ann_info_num	IN: indicates where in ann_info to start
+        int ann_info_num	IN: indicates where in ann_info to start
                                     storing info
         char* ann_text		IN: text of the annotation (this will be changed
                                     to array of strings when time permits)
@@ -568,12 +568,12 @@ readnoHDF_char(const char *filename, const int32 offset, const int32 length, con
         The number of annotations whose data info is successfully retrieved
         and stored in ann_info or FAIL if failure occurs.
 ********************************************************************/
-intn
-get_annot_datainfo(int32 an_id, ann_type annot_type, int32 num_anns, t_ann_info_t *ann_info,
-                   intn ann_info_num, char *ann_text)
+static int
+get_annot_datainfo(int32 an_id, ann_type annot_type, int32 num_anns, t_ann_info_t *ann_info, int ann_info_num,
+                   const char *ann_text)
 {
     int32 ann_id, ann_index;
-    intn  status_n, ret_value = 0;
+    int   status_n, ret_value = 0;
 
     /* Get the annotation. */
     for (ann_index = 0; ann_index < num_anns; ann_index++) {
@@ -641,7 +641,7 @@ test_annotation()
         vgroup_id;                       /* vgroup ID */
     uint16       vgroup_tag, vgroup_ref; /* vgroup tag/ref */
     t_ann_info_t ann_info[4];            /* temporary storage of annotation info */
-    intn         status_n;               /* returned status for functions returning an intn  */
+    int          status_n;               /* returned status for functions returning an int  */
     int32        status;                 /* returned status for functions returning an int32 */
 
     /* Create the HDF file. */
@@ -718,7 +718,7 @@ test_annotation()
             n_file_descs,  /* numbers of file descs */
             n_data_labels, /* numbers of data labels */
             n_data_descs;  /* numbers of data descs */
-        intn num_anns = 0, ann_info_num = 0;
+        int num_anns = 0, ann_info_num = 0;
 
         /* Open the file. */
         fid = Hopen(ANNOT_FILE, DFACC_RDONLY, 0);
@@ -819,8 +819,8 @@ test_annotation()
 
 /* Convenient function to create and write to an image, used by
    test_oneblock_ri */
-static intn
-make_comp_image(int32 grid, char *img_name,
+static int
+make_comp_image(int32 grid, const char *img_name,
                 char       start_char, /* first value in the image, for variety of data */
                 int32      comp_type,  /* compression method */
                 comp_info *cinfo)      /* compression parameters */
@@ -830,9 +830,9 @@ make_comp_image(int32 grid, char *img_name,
     char  image0[WIDTH][LENGTH];     /* image data */
     int32 start[2];                  /* start of image data to grab */
     int32 stride[2];                 /* stride of image data to grab */
-    intn  ii, jj;                    /* indices */
-    intn  status;                    /* generic return value */
-    intn  ret_value = SUCCEED;
+    int   ii, jj;                    /* indices */
+    int   status;                    /* generic return value */
+    int   ret_value = SUCCEED;
 
     /* Initialize data we are going to write out, each image created by this
        convenient function will use the same data pattern with the first value
@@ -871,8 +871,8 @@ test_oneblock_ri()
     int32 fid, grid,          /* file ID and GR interface ID */
         riid;                 /* raster image ID */
     int32     offset, length; /* offset/length buffers for single block of data */
-    intn      status;         /* status returned from routines */
-    intn      ii;             /* indices */
+    int       status;         /* status returned from routines */
+    int       ii;             /* indices */
     int32     n_images, n_fattrs;
     comp_info cinfo; /* Compression parameters - union */
     /* offsets/lengths to be used to verify offsets/lengths returned by
@@ -965,7 +965,7 @@ test_oneblock_ri()
 
         /* Only verify data of the first image, which has non-compressed data. */
         if (ii == 0) {
-            intn jj, kk;
+            int  jj, kk;
             char buffer[WIDTH][LENGTH], check_image[WIDTH * LENGTH];
             for (kk = 0; kk < WIDTH; kk++)
                 for (jj = 0; jj < LENGTH; jj++)
@@ -1003,8 +1003,8 @@ test_dfr8_24()
     int32 fid, grid,      /* file ID and GR interface ID */
         riid;             /* raster image ID */
     int32 offset, length; /* offset/length buffers for single block of data */
-    intn  status;         /* status returned from routines */
-    intn  ii, jj;         /* indices */
+    int   status;         /* status returned from routines */
+    int   ii, jj;         /* indices */
     int32 n_images, n_fattrs;
     char  buf[WIDTH][LENGTH][3];
 
@@ -1112,12 +1112,12 @@ test_getpalinfo()
     uint8 paletteA[N_ENTRIES * N_COMPS_PAL] = {0}; /* for IP8 mostly */
     uint8 paletteB[N_ENTRIES * N_COMPS_PAL] = {0};
     uint8 paletteD[N_ENTRIES * N_COMPS_PAL] = {0};
-    intn  n_pals = 0; /* number of palettes, returned by DFPnpals and GRgetpalinfo */
+    int   n_pals = 0; /* number of palettes, returned by DFPnpals and GRgetpalinfo */
 
     hdf_ddinfo_t *palinfo_array = NULL; /* list of palette DDs */
     uint8        *inbuf;                /* palette data read back in */
-    intn          ii, jj;               /* indices */
-    intn          status;               /* status returned from routines */
+    int           ii, jj;               /* indices */
+    int           status;               /* status returned from routines */
 
     /* Initialize the 8-bit image array */
     static uint8 raster_data[WIDTH][LENGTH] = {
@@ -1359,7 +1359,7 @@ test_getpalinfo()
         n_pals = GRgetpalinfo(grid, 0, NULL);
         CHECK_VOID(n_pals, FAIL, "GRgetpalinfo");
 
-        palinfo_array = (hdf_ddinfo_t *)malloc(n_pals * sizeof(hdf_ddinfo_t));
+        palinfo_array = (hdf_ddinfo_t *)malloc((size_t)n_pals * sizeof(hdf_ddinfo_t));
         CHECK_ALLOC(palinfo_array, "palinfo_array", "test_getpalinfo");
 
         n_pals = GRgetpalinfo(grid, n_pals, palinfo_array);
@@ -1369,12 +1369,12 @@ test_getpalinfo()
            data identifiers 201/ref and 301/ref */
         /* inbuf = (uint8 *) malloc(palinfo_array[0].length * sizeof(uint8));
          */
-        inbuf = (uint8 *)malloc(palinfo_array[0].length);
+        inbuf = (uint8 *)malloc((size_t)(palinfo_array[0].length));
         CHECK_ALLOC(inbuf, "inbuf", "test_getpalinfo");
         status = Hgetelement(fid, palinfo_array[0].tag, palinfo_array[0].ref, inbuf);
         CHECK_VOID(status, FAIL, "Hgetelement");
 
-        if (memcmp(inbuf, paletteA, palinfo_array[0].length) != 0)
+        if (memcmp(inbuf, paletteA, (size_t)(palinfo_array[0].length)) != 0)
             fprintf(stderr,
                     "palette data pointed by tag/ref = %d/%d at offset/length = %d/%d differs from written\n",
                     palinfo_array[0].tag, palinfo_array[0].ref, palinfo_array[0].offset,
@@ -1387,12 +1387,12 @@ test_getpalinfo()
 
         /* inbuf = (uint8 *) malloc(palinfo_array[7].length * sizeof(uint8));
          */
-        inbuf = (uint8 *)malloc(palinfo_array[7].length);
+        inbuf = (uint8 *)malloc((size_t)palinfo_array[7].length);
         CHECK_ALLOC(inbuf, "inbuf", "test_getpalinfo");
         status = Hgetelement(fid, palinfo_array[7].tag, palinfo_array[7].ref, inbuf);
         CHECK_VOID(status, FAIL, "Hgetelement");
 
-        if (memcmp(inbuf, palette_buf1, palinfo_array[7].length) != 0)
+        if (memcmp(inbuf, palette_buf1, (size_t)palinfo_array[7].length) != 0)
             fprintf(stderr,
                     "palette data pointed by tag/ref = %d/%d at offset/length = %d/%d differs from written\n",
                     palinfo_array[7].tag, palinfo_array[7].ref, palinfo_array[7].offset,
@@ -1422,7 +1422,7 @@ static void
 test_getntinfo()
 {
     hdf_ntinfo_t nt_info;
-    intn         status = SUCCEED;
+    int          status = SUCCEED;
 
     status = Hgetntinfo(DFNT_UINT8, &nt_info);
     CHECK_VOID(status, FAIL, "Hgetntinfo DFNT_UINT8");

@@ -700,7 +700,7 @@ add_r8(const char *image_file, const char *fname, int32 file_id, int32 vgroup_id
  *-------------------------------------------------------------------------
  */
 static int
-add_r24(const char *image_file, const char *fname, int32 file_id, intn il, int32 vgroup_id)
+add_r24(const char *image_file, const char *fname, int32 file_id, int il, int32 vgroup_id)
 {
     int32 ri_ref;                            /* reference number of the GR image */
     char *srcdir         = getenv("srcdir"); /* the source directory */
@@ -1775,26 +1775,29 @@ do_file_all(const char *fname)
      *-------------------------------------------------------------------------
      */
     if (SZ_encoder_enabled()) {
+        int32 *buf    = NULL;
+        int32  dim[2] = {YD1, XD1};
+        int32  bpp    = 32;
+
         chunk_flags = HDF_NONE;
         comp_type   = COMP_CODE_SZIP;
+
         if (add_sd(file_id, sd_id, "dset_szip", 0, chunk_flags, comp_type, &c_info) < 0)
             goto out;
 
-        {
+        if (NULL == (buf = (int32 *)malloc((size_t)(YD1 * XD1) * sizeof(int32))))
+            goto out;
 
-            int i, j;
-            {
-                int32 buf[YD1][XD1];
-                int32 dim[2] = {YD1, XD1};
-                int32 bpp    = 32;
-                for (j = 0; j < YD1; j++) {
-                    for (i = 0; i < XD1; i++)
-                        buf[j][i] = (int32)(i + j) + 1;
-                }
-                if (add_sd_szip(file_id, sd_id, "dset32szip", 0, HDF_NONE, DFNT_INT32, bpp, dim, buf) < 0)
-                    return FAIL;
-            }
+        for (int32 j = 0; j < YD1; j++) {
+            for (int32 i = 0; i < XD1; i++)
+                buf[(j * YD1) + i] = i + j + 1;
         }
+        if (add_sd_szip(file_id, sd_id, "dset32szip", 0, HDF_NONE, DFNT_INT32, bpp, dim, buf) < 0) {
+            free(buf);
+            goto out;
+        }
+
+        free(buf);
     }
 
 #endif
@@ -1973,7 +1976,7 @@ do_file_hyperslab(const char *fname)
     int32 rank;
     uint8 array_data[DIM0][DIM1];
     uint8 append_data[DIM1];
-    intn  i, j, n;
+    int   i, j, n;
 
     /* Create a file and initiate the SD interface. */
     if ((sd_id = SDstart(fname, DFACC_CREATE)) == FAIL)

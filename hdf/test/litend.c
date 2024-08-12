@@ -11,7 +11,7 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "tproto.h"
+#include "testhdf.h"
 
 /* Internal Variables */
 #define CDIM_X 7
@@ -19,10 +19,6 @@
 
 #define FILENAME "test_files/litend.dat"
 #define TMPFILE  "temp.hdf"
-
-/* for those machines with imprecise IEEE<-> conversions, this should be */
-/* close enough */
-#define FLOAT64_FUDGE ((float64)0.00000001)
 
 static int8    cdata_i8[CDIM_Y][CDIM_X];
 static uint8   cdata_u8[CDIM_Y][CDIM_X];
@@ -64,7 +60,7 @@ wrapup_cdata(void)
 static void
 test_little_read(void)
 {
-    intn     rank;
+    int      rank;
     int32    dimsizes[2] = {-1, -1};
     int32    numbertype;
     int8    *data_i8;
@@ -310,7 +306,7 @@ test_little_read(void)
 static void
 test_little_write(void)
 {
-    intn     rank;
+    int      rank;
     int32    dimsizes[2];
     int32    numbertype;
     int8    *data_i8;

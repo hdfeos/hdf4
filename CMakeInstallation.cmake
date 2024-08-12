@@ -113,7 +113,7 @@ else ()
   set (BYTESEX little-endian)
 endif ()
 configure_file (
-    ${HDF_RESOURCES_DIR}/libhdf4.settings.cmake.in
+    ${HDF4_SOURCE_DIR}/libhdf4.settings.cmake.in
     ${HDF4_BINARY_DIR}/libhdf4.settings ESCAPE_QUOTES @ONLY
 )
 install (
@@ -149,7 +149,7 @@ if (HDF4_PACK_EXAMPLES)
   )
   install (
       FILES
-          ${HDF4_SOURCE_DIR}/release_notes/USING_CMake_Examples.txt
+          ${HDF4_SOURCE_DIR}/release_docs/USING_CMake_Examples.txt
       DESTINATION ${HDF4_INSTALL_DATA_DIR}
       COMPONENT hdfdocuments
   )
@@ -188,34 +188,34 @@ if (NOT HDF4_EXTERNALLY_CONFIGURED)
       DESTINATION ${HDF4_INSTALL_DATA_DIR}
       COMPONENT hdfdocuments
   )
-  if (EXISTS "${HDF4_SOURCE_DIR}/release_notes" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/release_notes")
+  if (EXISTS "${HDF4_SOURCE_DIR}/release_docs" AND IS_DIRECTORY "${HDF4_SOURCE_DIR}/release_docs")
     set (release_files
-        ${HDF4_SOURCE_DIR}/release_notes/USING_HDF4_CMake.txt
-        ${HDF4_SOURCE_DIR}/release_notes/RELEASE.txt
+        ${HDF4_SOURCE_DIR}/release_docs/USING_HDF4_CMake.txt
+        ${HDF4_SOURCE_DIR}/release_docs/RELEASE.txt
     )
     if (WIN32)
       set (release_files
           ${release_files}
-          ${HDF4_SOURCE_DIR}/release_notes/USING_HDF4_VS.txt
+          ${HDF4_SOURCE_DIR}/release_docs/USING_HDF4_VS.txt
       )
     endif ()
     if (HDF4_PACK_INSTALL_DOCS)
       set (release_files
           ${release_files}
-          ${HDF4_SOURCE_DIR}/release_notes/INSTALL_CMake.txt
-          ${HDF4_SOURCE_DIR}/release_notes/HISTORY.txt
-          ${HDF4_SOURCE_DIR}/release_notes/INSTALL
+          ${HDF4_SOURCE_DIR}/release_docs/INSTALL_CMake.txt
+          ${HDF4_SOURCE_DIR}/release_docs/HISTORY.txt
+          ${HDF4_SOURCE_DIR}/release_docs/INSTALL
       )
       if (WIN32)
         set (release_files
             ${release_files}
-            ${HDF4_SOURCE_DIR}/release_notes/INSTALL_Windows.txt
+            ${HDF4_SOURCE_DIR}/release_docs/INSTALL_Windows.txt
         )
       endif ()
       if (CYGWIN)
         set (release_files
             ${release_files}
-            ${HDF4_SOURCE_DIR}/release_notes/INSTALL_Cygwin.txt
+            ${HDF4_SOURCE_DIR}/release_docs/INSTALL_Cygwin.txt
         )
       endif ()
     endif ()
@@ -242,9 +242,9 @@ if (NOT HDF4_EXTERNALLY_CONFIGURED AND NOT HDF4_NO_PACKAGES)
   set (CPACK_PACKAGE_VERSION_MINOR "${HDF4_PACKAGE_VERSION_MINOR}")
   set (CPACK_PACKAGE_VERSION_PATCH "")
   set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-  if (EXISTS "${HDF4_SOURCE_DIR}/release_notes")
-    set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/release_notes/RELEASE.txt")
-    set (CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/release_notes/RELEASE.txt")
+  if (EXISTS "${HDF4_SOURCE_DIR}/release_docs")
+    set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/release_docs/RELEASE.txt")
+    set (CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/release_docs/RELEASE.txt")
   endif ()
   set (CPACK_PACKAGE_RELOCATABLE TRUE)
   if (OVERRIDE_INSTALL_VERSION)
@@ -258,9 +258,6 @@ if (NOT HDF4_EXTERNALLY_CONFIGURED AND NOT HDF4_NO_PACKAGES)
   if (WIN32)
     set (CPACK_GENERATOR "ZIP")
 
-    if (NSIS_EXECUTABLE)
-      list (APPEND CPACK_GENERATOR "NSIS")
-    endif ()
     # Installers for 32- vs. 64-bit CMake:
     #  - Root install directory (displayed to end user at installer-run time)
     #  - "NSIS package/display name" (text used in the installer GUI)
@@ -309,7 +306,7 @@ if (NOT HDF4_EXTERNALLY_CONFIGURED AND NOT HDF4_NO_PACKAGES)
     endif ()
   elseif (APPLE)
     list (APPEND CPACK_GENERATOR "STGZ")
-    option (HDF4_PACK_MACOSX_DMG  "Package the HDF4 Library using DragNDrop" OFF)
+    option (HDF4_PACK_MACOSX_DMG  "Package the HDF4 Library using DragNDrop" ON)
     if (HDF4_PACK_MACOSX_DMG)
       list (APPEND CPACK_GENERATOR "DragNDrop")
     endif ()
@@ -407,28 +404,28 @@ The HDF data model, file format, API, library, and tools are open and distribute
 
   if (HDF4_PACKAGE_EXTLIBS)
     if (HDF4_ALLOW_EXTERNAL_SUPPORT MATCHES "GIT" OR HDF4_ALLOW_EXTERNAL_SUPPORT MATCHES "TGZ")
-      if (JPEG_FOUND AND JPEG_USE_EXTERNAL)
+      if (H4_JPEG_FOUND AND JPEG_USE_EXTERNAL)
         if (WIN32)
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${JPEG_INCLUDE_DIR_GEN};JPEG;ALL;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_JPEG_INCLUDE_DIR_GEN};JPEG;ALL;/")
         else ()
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${JPEG_INCLUDE_DIR_GEN};JPEG;libraries;/")
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${JPEG_INCLUDE_DIR_GEN};JPEG;configinstall;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_JPEG_INCLUDE_DIR_GEN};JPEG;libraries;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_JPEG_INCLUDE_DIR_GEN};JPEG;configinstall;/")
         endif ()
       endif ()
-      if (ZLIB_FOUND AND ZLIB_USE_EXTERNAL)
+      if (H4_ZLIB_FOUND AND ZLIB_USE_EXTERNAL)
         if (WIN32)
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${ZLIB_INCLUDE_DIR_GEN};ZLIB;ALL;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_ZLIB_INCLUDE_DIR_GEN};ZLIB;ALL;/")
         else ()
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${ZLIB_INCLUDE_DIR_GEN};ZLIB;libraries;/")
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${ZLIB_INCLUDE_DIR_GEN};ZLIB;configinstall;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_ZLIB_INCLUDE_DIR_GEN};ZLIB;libraries;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_ZLIB_INCLUDE_DIR_GEN};ZLIB;configinstall;/")
         endif ()
       endif ()
-      if (SZIP_FOUND AND SZIP_USE_EXTERNAL)
+      if (H4_SZIP_FOUND AND SZIP_USE_EXTERNAL)
         if (WIN32)
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${SZIP_INCLUDE_DIR_GEN};SZIP;ALL;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_SZIP_INCLUDE_DIR_GEN};SZIP;ALL;/")
         else ()
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${SZIP_INCLUDE_DIR_GEN};SZIP;libraries;/")
-          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${SZIP_INCLUDE_DIR_GEN};SZIP;configinstall;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_SZIP_INCLUDE_DIR_GEN};SZIP;libraries;/")
+          set (CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${H4_SZIP_INCLUDE_DIR_GEN};SZIP;configinstall;/")
         endif ()
       endif ()
     endif ()

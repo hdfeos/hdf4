@@ -25,10 +25,10 @@ uint8 red_comp[256], green_comp[256], blue_comp[256];
 
 comp_info cinfo; /* compression structure */
 
-static intn magnify(uint8 *from_buffer, uint8 *to_buffer, int32 from_x0, int32 from_y0, int32 from_x1,
-                    int32 from_y1, int32 from_width, int32 from_height, int32 to_width, int32 to_height);
+static int magnify(uint8 *from_buffer, uint8 *to_buffer, int32 from_x0, int32 from_y0, int32 from_x1,
+                   int32 from_y1, int32 from_width, int32 from_height, int32 to_width, int32 to_height);
 
-static intn convert8to24(uint8 *img8_buf, uint8 *img24_buf, int32 img_xdim, int32 img_ydim);
+static int convert8to24(uint8 *img8_buf, uint8 *img24_buf, int32 img_xdim, int32 img_ydim);
 
 static void usage(void);
 
@@ -59,7 +59,7 @@ static void usage(void);
  *  Calls    :
  *  Called by    :
  **********************************************************************/
-static intn
+static int
 magnify(uint8 *from_buffer, uint8 *to_buffer, int32 from_x0, int32 from_y0, int32 from_x1, int32 from_y1,
         int32 from_width, int32 from_height, int32 to_width, int32 to_height)
 {
@@ -87,14 +87,14 @@ magnify(uint8 *from_buffer, uint8 *to_buffer, int32 from_x0, int32 from_y0, int3
     wind_height = (float64)((from_y1 - from_y0) + 1);
 
     /* allocate room for the x coordinate lookup table */
-    x_coor = (int32 *)malloc((int32)((size_t)to_width * sizeof(int32)));
+    x_coor = (int32 *)malloc((size_t)to_width * sizeof(int32));
     EXCHECK(x_coor == NULL, XCoorFailed); /* check if malloc() failed */
     temp_val = wind_width / (float64)to_width;
     for (u = 0; u < to_width; u++) /* calculate the x coordinate lookup table */
         x_coor[u] = ((uint16)((float64)u * temp_val) + from_x0);
 
     /* allocate room for the array of pointers */
-    y_coor = (uint8 **)malloc((int32)((size_t)to_height * sizeof(uint8 *)));
+    y_coor = (uint8 **)malloc((size_t)to_height * sizeof(uint8 *));
     EXCHECK(y_coor == NULL, YCoorFailed); /* check if malloc() failed */
     temp_val = wind_height / (float64)to_height;
     for (u = 0; u < to_height; u++) /* calculate the y coordinates */
@@ -115,10 +115,10 @@ magnify(uint8 *from_buffer, uint8 *to_buffer, int32 from_x0, int32 from_y0, int3
         } /* end if */
           /* this line is the same as the previous one, just copy it */
         else {
-            memcpy(buf_off, last_buf, to_width); /* copy the previous line */
-            buf_off += to_width;                 /* advance the buffer offset pointer */
-        }                                        /* end else */
-    }                                            /* end for */
+            memcpy(buf_off, last_buf, (size_t)to_width); /* copy the previous line */
+            buf_off += to_width;                         /* advance the buffer offset pointer */
+        }                                                /* end else */
+    }                                                    /* end for */
     free(y_coor);
     free(x_coor);
     return (TRUE);
@@ -142,7 +142,7 @@ XCoorFailed: /* Failed to allocate memory for the X coor. lookup table */
  *  Calls    :
  *  Called by    :
  **********************************************************************/
-static intn
+static int
 convert8to24(uint8 *img8_buf, uint8 *img24_buf, int32 img_xdim, int32 img_ydim)
 {
     uint32 pixels; /* local counting variable */
@@ -181,17 +181,17 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
-    intn    do_jpeg   = FALSE;        /* flag to indicate JPEG compression */
-    intn    jpeg_qual = 75;           /* JPEG quality factor */
-    intn    do_scale  = FALSE;        /* flag to indicate whether to scale images */
-    float32 img_scale = (float32)1.0; /* scaling factor */
-    int32   xdim, ydim;               /* dimensions of the image to convert */
-    intn    ispal;                    /* whether there's a palette with the image */
-    uint8  *img_buf;                  /* buffer to store the image in */
-    uint8  *img24_buf;                /* buffer to store the 24-bit image in */
-    uint8  *pal_buf = NULL;           /* buffer to store the palette in */
-    intn    file    = 1;              /* the argument the files start at */
-    intn    i;                        /* local counting variable */
+    int     do_jpeg   = FALSE; /* flag to indicate JPEG compression */
+    int     jpeg_qual = 75;    /* JPEG quality factor */
+    int     do_scale  = FALSE; /* flag to indicate whether to scale images */
+    float32 img_scale = 1.0F;  /* scaling factor */
+    int32   xdim, ydim;        /* dimensions of the image to convert */
+    int     ispal;             /* whether there's a palette with the image */
+    uint8  *img_buf;           /* buffer to store the image in */
+    uint8  *img24_buf;         /* buffer to store the 24-bit image in */
+    uint8  *pal_buf = NULL;    /* buffer to store the palette in */
+    int     file    = 1;       /* the argument the files start at */
+    int     i;                 /* local counting variable */
 
     if (argc < 3)
         usage();
@@ -203,11 +203,11 @@ main(int argc, char *argv[])
         while (argv[file][0] == '-' || argv[file][0] == '/') {
             switch (argv[file][1]) {
                 case 's':
-                    if ((img_scale = (float32)atof(&argv[file][2])) <=
-                        (float32)0.0) { /* check for valid scale */
+                    /* Check for valid scale */
+                    if ((img_scale = (float32)atof(&argv[file][2])) <= 0.0F) {
                         printf("Bad scale, must be greater than 0\n");
-                        return (1);
-                    } /* end if */
+                        return 1;
+                    }
                     do_scale = TRUE;
                     break;
 

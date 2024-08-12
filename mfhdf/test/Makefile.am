@@ -6,8 +6,8 @@ include $(top_srcdir)/config/commence.am
 
 ## Setup the different includes and preprocessor #defines we need.
 test_INCLUDES=-I$(top_srcdir)/hdf/src         \
-              -I$(top_srcdir)/mfhdf/libsrc    \
-              -I$(top_builddir)/mfhdf/libsrc
+              -I$(top_srcdir)/mfhdf/src       \
+              -I$(top_builddir)/mfhdf/src
 DEFINES=-DHDF
 AM_CPPFLAGS=$(test_INCLUDES) $(DEFINES)
 
@@ -16,9 +16,7 @@ AM_CPPFLAGS=$(test_INCLUDES) $(DEFINES)
 #############################################################################
 
 TEST_PROG = cdftest hdfnctest hdftest
-TEST_SCRIPT = testmfhdf.sh
 check_PROGRAMS = cdftest hdfnctest hdftest
-check_SCRIPTS = testmfhdf.sh
 
 cdftest_SOURCES = cdftest.c
 cdftest_LDADD = $(LIBMFHDF) $(LIBHDF) @LIBS@

@@ -11,7 +11,7 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "tproto.h"
+#include "testhdf.h"
 
 static float32 f32[10][10], tf32[10][10];
 static float32 f32scale[10], tf32scale[10];
@@ -59,7 +59,7 @@ test_sdmms(void)
 {
     uint32 i, j;
     int    err, err1, err2, ret;
-    intn   rank;
+    int    rank;
     int32  dims[2];
 
     rank    = 2;
@@ -94,11 +94,11 @@ test_sdmms(void)
         ui32scale[i] = (uint32)((i * 400000000U) + j);    /* range: 0 ~ 4-billion */
     }
 
-    cal1 = (float64)10.0;
-    cal2 = (float64)0.0;
-    cal3 = (float64)27.0;
-    cal4 = (float64)1.5;
-    cal5 = (int32)DFNT_INT16;
+    cal1 = 10.0;
+    cal2 = 0.0;
+    cal3 = 27.0;
+    cal4 = 1.5;
+    cal5 = DFNT_INT16;
 
     ret = DFSDsetdims(rank, dims);
     RESULT("DFSDsetdims");

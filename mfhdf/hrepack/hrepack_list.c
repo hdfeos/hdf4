@@ -46,13 +46,6 @@ int list_an(int32 infile_id, int32 outfile_id, options_t *options);
  *
  * Return: SUCCEED, FAIL
  *
- * Programmer: Pedro Vicente, pvn@ncsa.uiuc.edu
- *
- * Date: July 10, 2003
- *
- * Modifications: September 9, 2007
- *  Check for duplicate Vgroup insertions
- *
  * Description:
  *
  * A main loop is used to locate all the objects in the file. The algorithm used is:
@@ -89,7 +82,6 @@ int list_an(int32 infile_id, int32 outfile_id, options_t *options);
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_main(const char *infname, const char *outfname, options_t *options)
 {
@@ -102,7 +94,7 @@ list_main(const char *infname, const char *outfname, options_t *options)
         gr_out             = FAIL,                      /* GR interface identifier */
         infile_id = FAIL, outfile_id = FAIL, n_rimages, /* number of raster images in the file */
         n_file_attrs;                                   /* number of file attributes */
-    intn has_GRelems = 0;                               /* set to 1 when there are GR images or */
+    int has_GRelems = 0;                                /* set to 1 when there are GR images or */
                                                         /* attributes in the file (HDFFR-1428) */
     int         i;
     const char *err;
@@ -310,7 +302,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_vg(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, int32 gr_id, int32 gr_out,
         list_table_t *list_tbl, dim_table_t *td1, dim_table_t *td2, options_t *options)
@@ -357,7 +348,7 @@ list_vg(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, int32 gr_i
          * use the nlones returned to allocate sufficient space for the
          * buffer ref_array to hold the reference numbers of all lone vgroups,
          */
-        ref_array = (int32 *)malloc(sizeof(int32) * nlones);
+        ref_array = (int32 *)malloc(sizeof(int32) * (size_t)nlones);
 
         /*
          * and call Vlone again to retrieve the reference numbers into
@@ -366,7 +357,7 @@ list_vg(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, int32 gr_i
         nlones = Vlone(infile_id, ref_array, nlones);
 
         /*
-         * iterate tru each lone vgroup.
+         * iterate through each lone vgroup.
          */
         for (i = 0; i < nlones; i++) {
 
@@ -471,8 +462,8 @@ list_vg(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, int32 gr_i
             /* insert objects for this group */
             ntagrefs = Vntagrefs(vg_id);
             if (ntagrefs > 0) {
-                tags = (int32 *)malloc(sizeof(int32) * ntagrefs);
-                refs = (int32 *)malloc(sizeof(int32) * ntagrefs);
+                tags = (int32 *)malloc(sizeof(int32) * (size_t)ntagrefs);
+                refs = (int32 *)malloc(sizeof(int32) * (size_t)ntagrefs);
                 if (Vgettagrefs(vg_id, tags, refs, ntagrefs) < 0)
                     goto out;
 
@@ -554,7 +545,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 vgroup_insert(int32 infile_id, int32 outfile_id, int32 sd_id, /* SD interface identifier */
               int32         sd_out,                           /* SD interface identifier */
@@ -705,8 +695,8 @@ vgroup_insert(int32 infile_id, int32 outfile_id, int32 sd_id, /* SD interface id
                     /* insert objects for this group */
                     ntagrefs = Vntagrefs(vg_id);
                     if (ntagrefs > 0) {
-                        tags = (int32 *)malloc(sizeof(int32) * ntagrefs);
-                        refs = (int32 *)malloc(sizeof(int32) * ntagrefs);
+                        tags = (int32 *)malloc(sizeof(int32) * (size_t)ntagrefs);
+                        refs = (int32 *)malloc(sizeof(int32) * (size_t)ntagrefs);
                         if (Vgettagrefs(vg_id, tags, refs, ntagrefs) < 0)
                             goto out;
                         /* recurse */
@@ -811,7 +801,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_gr(int32 infile_id, int32 outfile_id, int32 gr_id, /* GR interface identifier */
         int32         gr_out,                           /* GR interface identifier */
@@ -885,7 +874,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_sds(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, list_table_t *list_tbl,
          dim_table_t *td1, dim_table_t *td2, options_t *options)
@@ -945,7 +933,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_vs(int32 infile_id, int32 outfile_id, list_table_t *list_tbl, options_t *options)
 {
@@ -983,7 +970,7 @@ list_vs(int32 infile_id, int32 outfile_id, list_table_t *list_tbl, options_t *op
          * use the nlones returned to allocate sufficient space for the
          * buffer ref_array to hold the reference numbers of all lone vgroups,
          */
-        ref_array = (int32 *)malloc(sizeof(int32) * nlones);
+        ref_array = (int32 *)malloc(sizeof(int32) * (size_t)nlones);
 
         /*
          * and call VSlone again to retrieve the reference numbers into
@@ -992,7 +979,7 @@ list_vs(int32 infile_id, int32 outfile_id, list_table_t *list_tbl, options_t *op
         nlones = VSlone(infile_id, ref_array, nlones);
 
         /*
-         * iterate tru each lone vdata.
+         * iterate through each lone vdata.
          */
         for (i = 0; i < nlones; i++) {
             /*
@@ -1057,7 +1044,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_glb(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, int32 gr_id, int32 gr_out,
          list_table_t *list_tbl, options_t *options)
@@ -1112,7 +1098,6 @@ list_glb(int32 infile_id, int32 outfile_id, int32 sd_id, int32 sd_out, int32 gr_
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_an(int32 infile_id, int32 outfile_id, options_t *options)
 {
@@ -1156,7 +1141,7 @@ list_an(int32 infile_id, int32 outfile_id, options_t *options)
         ann_length = ANannlen(ann_id);
 
         /* Allocate space for the buffer to hold the data label text */
-        ann_buf = malloc((ann_length + 1) * sizeof(char));
+        ann_buf = malloc((size_t)(ann_length + 1) * sizeof(char));
 
         /*
          * Read and display the file label.  Note that the size of the buffer,
@@ -1203,7 +1188,7 @@ list_an(int32 infile_id, int32 outfile_id, options_t *options)
         ann_length = ANannlen(ann_id);
 
         /* Allocate space for the buffer to hold the data label text */
-        ann_buf = malloc((ann_length + 1) * sizeof(char));
+        ann_buf = malloc((size_t)(ann_length + 1) * sizeof(char));
 
         if (ANreadann(ann_id, ann_buf, ann_length + 1) == FAIL) {
             printf("Could not read AN\n");
@@ -1256,12 +1241,11 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 int
 list_pal(const char *infname, const char *outfname, list_table_t *list_tbl, options_t *options)
 {
     uint8  palette_data[256 * 3];
-    intn   nPals, j;
+    int    nPals, j;
     uint16 ref;
 
     if (options->trip == 0) {

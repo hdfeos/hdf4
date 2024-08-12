@@ -19,11 +19,12 @@
  *
  ****************************************************************************/
 
-#include "hdf.h"
 #include <stdio.h>
-#include "tutils.h"
 
-#include "tproto.h"
+#include "hdf.h"
+#include "tutils.h"
+#include "testhdf.h"
+
 #define TESTFILE "tmgratt.hdf"
 
 #define F_ATT1_VAL       "Contents of First FILE Attribute"
@@ -41,7 +42,7 @@
 #define RI_ATT2_N_VALUES 6
 
 /* Pixel with fill values */
-static float32 fill_pixel[RI_ATT_N_VALUES]  = {1.3, -2.4, 1000.3, .25};
+static float32 fill_pixel[RI_ATT_N_VALUES]  = {1.3F, -2.4F, 1000.3F, 0.25F};
 static uint8   file_attr_2[F_ATT2_N_VALUES] = {1, 2, 3, 4, 5};
 
 /********************************************************************
@@ -139,7 +140,7 @@ test_mgr_fillvalues()
         VERIFY_CHAR(attr_name, FILL_ATTR, "GRattrinfo");
 
         /* Allocate a buffer to hold the attribute data. */
-        read_fill_vals = malloc(n_values * sizeof(float32));
+        read_fill_vals = malloc((size_t)n_values * sizeof(float32));
         if (read_fill_vals == NULL) {
             fprintf(stderr, "Unable to allocate space for attribute data.\n");
             exit(1);
@@ -208,7 +209,7 @@ test_mgr_userattr()
     int16        ri_attr_2[RI_ATT2_N_VALUES] = {1, 2, 3, 4, 5, 6};
     void        *data_buf; /* buffer to hold the attribute values */
     hdf_ntinfo_t nt_info;  /* struct containing name and byte order of a num type */
-    intn         status;   /* status for functions returning an intn */
+    int          status;   /* status for functions returning an int */
 
     MESSAGE(8, printf("Reading user-defined attribute\n"););
 
@@ -273,7 +274,7 @@ test_mgr_userattr()
              * part of the test where the correspondent GRsetattr was called. */
             switch (ntype) {
                 case DFNT_CHAR8:
-                    data_buf = malloc(n_values * sizeof(char8));
+                    data_buf = malloc((size_t)n_values * sizeof(char8));
                     if (data_buf == NULL) {
                         fprintf(stderr,
                                 "test_mgr_userattr: Failed to allocate memory for data buffer for char8.\n");
@@ -281,7 +282,7 @@ test_mgr_userattr()
                     }
                     break;
                 case DFNT_UINT8:
-                    data_buf = malloc(n_values * sizeof(uint8));
+                    data_buf = malloc((size_t)n_values * sizeof(uint8));
                     if (data_buf == NULL) {
                         fprintf(stderr,
                                 "test_mgr_userattr: Failed to allocate memory for data buffer for uint8.\n");
@@ -301,7 +302,7 @@ test_mgr_userattr()
 
             switch (ntype) {
                 case DFNT_CHAR8:
-                    if (memcmp(data_buf, F_ATT1_VAL, n_values) != 0) {
+                    if (memcmp(data_buf, F_ATT1_VAL, (size_t)n_values) != 0) {
                         MESSAGE(3, printf("Error reading values of attribute %s\n", attr_name););
                         num_errs++;
                     } /* end if */
@@ -312,7 +313,7 @@ test_mgr_userattr()
                     VERIFY_CHAR(nt_info.type_name, "char8", "Hgetntinfo");
                     break;
                 case DFNT_UINT8:
-                    if (memcmp(data_buf, file_attr_2, n_values) != 0) {
+                    if (memcmp(data_buf, file_attr_2, (size_t)n_values) != 0) {
                         MESSAGE(3, printf("Error reading values of attribute %s\n", attr_name););
                         num_errs++;
                     } /* end if */
@@ -358,7 +359,7 @@ test_mgr_userattr()
              * part of the test where the correspondent GRsetattr was called. */
             switch (ntype) {
                 case DFNT_FLOAT32:
-                    data_buf = malloc(n_values * sizeof(float32));
+                    data_buf = malloc((size_t)n_values * sizeof(float32));
                     if (data_buf == NULL) {
                         fprintf(
                             stderr,
@@ -367,7 +368,7 @@ test_mgr_userattr()
                     }
                     break;
                 case DFNT_CHAR8:
-                    data_buf = malloc(n_values * sizeof(char8));
+                    data_buf = malloc((size_t)n_values * sizeof(char8));
                     if (data_buf == NULL) {
                         fprintf(stderr,
                                 "test_mgr_userattr: Failed to allocate memory for data buffer for char8.\n");
@@ -375,7 +376,7 @@ test_mgr_userattr()
                     }
                     break;
                 case DFNT_INT16:
-                    data_buf = malloc(n_values * sizeof(int16));
+                    data_buf = malloc((size_t)n_values * sizeof(int16));
                     if (data_buf == NULL) {
                         fprintf(stderr,
                                 "test_mgr_userattr: Failed to allocate memory for data buffer for int16.\n");

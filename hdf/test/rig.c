@@ -11,7 +11,7 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "tproto.h"
+#include "testhdf.h"
 
 #define XSIZE    13
 #define YSIZE    15
@@ -473,7 +473,7 @@ void
 test_r24(void)
 {
     int32  xd, yd;
-    intn   il;
+    int    il;
     int    Error;
     char   buf[YSIZE][XSIZE][3];
     char   buf1[YSIZE][3][XSIZE];
@@ -843,7 +843,7 @@ test_r24_jpeg(void)
         riid;                   /* raster image ID */
     comp_info cinfo;            /* compression information for the JPEG */
     int32     xd, yd;           /* image's dimensions */
-    intn      il;               /* image's interlace */
+    int       il;               /* image's interlace */
     long      begin_offset = 0, /* offset at the beginning of image's data */
         end_offset         = 0; /* offset at the end of image's data */
     uint8 *jpeg_24bit_temp;     /* buffer for 24-bit image data */
@@ -851,8 +851,8 @@ test_r24_jpeg(void)
     /* buffer for data read by JPEG function */
     int32  offset, length;     /* offset/length in the HDF file */
     int32  nonhdf_offset;      /* offset in the nonHDF file */
-    intn   status;             /* status returned from GR routines */
-    intn   ii;                 /* indices */
+    int    status;             /* status returned from GR routines */
+    int    ii;                 /* indices */
     int32  n_images, n_fattrs; /* number of images and number of file attrs */
     uint8 *hdf_buffer,         /* buffer of data read from HDF file */
         *nonhdf_buffer;        /* buffer of data read from non-HDF file */
@@ -1023,9 +1023,9 @@ test_r24_jpeg(void)
         CHECK_VOID(status, FAIL, "GRgetdatainfo");
 
         /* Allocate buffers for the data from the HDF file and non-HDF file */
-        hdf_buffer = (uint8 *)malloc(length * sizeof(uint8));
+        hdf_buffer = (uint8 *)malloc((size_t)length * sizeof(uint8));
         CHECK_ALLOC(hdf_buffer, "hdf_buffer", "test_r24_jpeg");
-        nonhdf_buffer = (uint8 *)malloc(length * sizeof(uint8));
+        nonhdf_buffer = (uint8 *)malloc((size_t)length * sizeof(uint8));
         CHECK_ALLOC(nonhdf_buffer, "nonhdf_buffer", "test_r24_jpeg");
 
         /* Read the block of data from the HDF file using offset/length returned by
@@ -1041,7 +1041,7 @@ test_r24_jpeg(void)
 
         /* Compare compressed data from the HDF file against that from the
            non-HDF file.  The two buffers should be identical */
-        if (memcmp(hdf_buffer, nonhdf_buffer, length)) {
+        if (memcmp(hdf_buffer, nonhdf_buffer, (size_t)length)) {
             /* Display any mismatched values for debugging */
             print_mismatched(hdf_buffer, nonhdf_buffer, length);
             num_errs++;

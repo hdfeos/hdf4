@@ -29,10 +29,11 @@
  *	subsequent read of an attribute failed. - BMR - Dec, 2005.
  *
  **************************************************************/
-#include "hdf.h"
-#include "tproto.h"
-#include "vg.h"
 #include <math.h>
+
+#include "hdf.h"
+#include "testhdf.h"
+#include "vg.h"
 
 #define FILENAME             "tvattr.hdf"
 #define VGNAME0              "vgname0"
@@ -59,8 +60,6 @@
 #define ATTNAME8             "attname8"
 #define ATTNAME9             "attname9"
 #define ATTNAME10            "attname10"
-#define EPS64                (float64)1.0E-14
-#define EPS32                (float32)1.0E-7
 #define MAX_HDF4_NAME_LENGTH 256
 
 int32   data1[6] = {0, -1, 10, 11, 20, 21}, idata1[6];
@@ -68,17 +67,17 @@ char    data2[6] = {'A', 'B', 'C', 'D', 'E', 'F'}, idata2[6];
 uint16  attr2[2] = {16, 32}, iattr2[2];
 uint32  attr1[4] = {100, 132, 10032, 10064}, iattr1[2];
 char    attr3[6] = {'m', 'N', 'p', 'S', 't', '\0'}, iattr3[6];
-float32 attr4[2] = {(float32)32.001, (float32)-34.002}, iattr4[2];
+float32 attr4[2] = {32.001F, -34.002F}, iattr4[2];
 float64 attr5[2] = {64.12345, -64.12345}, iattr5[2];
 
-static intn create_vset_stuff(void);
-static intn write_vattrs(void);
-static intn read_vattrs(void);
+static int  create_vset_stuff(void);
+static int  write_vattrs(void);
+static int  read_vattrs(void);
 static void test_readattrtwice(void);
 
 /* create vdatas and vgroups */
 
-static intn
+static int
 create_vset_stuff(void)
 {
     int32 fid, vgid, vsid;
@@ -162,13 +161,13 @@ create_vset_stuff(void)
 } /* create_vset_stuff */
 
 /* test attribute routines */
-static intn
+static int
 write_vattrs(void)
 {
     int32 fid, vgid, vsid;
     int32 vsref, vgref;
     int32 fldindex, vsversion;
-    intn  n_flds;
+    int   n_flds;
 
     /* add attrs to the 1 vg */
     if (FAIL == (fid = Hopen(FILENAME, DFACC_RDWR, -1))) {
@@ -459,12 +458,12 @@ write_vattrs(void)
 } /* write_vattr */
 
 /*  Test reading routines */
-static intn
+static int
 read_vattrs(void)
 {
     int32 fid, vgid, vsid, vgref, vsref;
-    intn  n_vgattrs, n_vsattrs, n_fldattrs;
-    intn  iattrindex, ret;
+    int   n_vgattrs, n_vsattrs, n_fldattrs;
+    int   iattrindex, ret;
     int32 i_type, i_count, i_size, iversion;
     char  iattrname[FIELDNAMELENMAX + 1];
 
@@ -662,7 +661,7 @@ read_vattrs(void)
         printf(" got  %s %d %d.\n", iattrname, (int)i_type, (int)i_count);
     }
     if (FAIL == VSgetattr(vsid, _HDF_VDATA, 1, iattr4) ||
-        (fabs((double)(iattr4[0] - attr4[0])) > fabs((double)(attr4[0] * EPS32)))) {
+        (fabs((double)(iattr4[0] - attr4[0])) > fabs((double)(attr4[0] * FLT_EPSILON)))) {
         num_errs++;
         printf(">>> Wrong values for attname4  of vsname1; \
                      got %f, should be %f.\n",
@@ -686,7 +685,7 @@ read_vattrs(void)
         printf(" got  %s %d %d.\n", iattrname, (int)i_type, (int)i_count);
     }
     if (FAIL == VSgetattr(vsid, 0, 2, iattr5) ||
-        (fabs((double)(iattr5[0] - attr5[0])) > fabs((double)(attr5[0] * EPS64)))) {
+        (fabs((double)(iattr5[0] - attr5[0])) > fabs((double)(attr5[0] * DBL_EPSILON)))) {
         num_errs++;
         printf(">>> Wrong values for attr VSNAME1  of fld 0 of vsname1; \
                      got %f, should be %f.\n",
@@ -734,7 +733,7 @@ test_readattrtwice(void)
     char  name[MAX_HDF4_NAME_LENGTH + 1];
     char *buffer;
     int   k;
-    intn  ret;
+    int   ret;
 
     file_id = Hopen(FILENAME, DFACC_READ, 0);
     CHECK_VOID(file_id, FAIL, "Hopen:FILENAME");
@@ -761,7 +760,7 @@ test_readattrtwice(void)
             ret = VSattrinfo(vsid, _HDF_VDATA, k, name, &data_type, &count, &size);
             CHECK_VOID(ret, FAIL, "VSattrinfo");
 
-            buffer = malloc(size + 1);
+            buffer = malloc((size_t)size + 1);
             CHECK_VOID(buffer, NULL, "malloc");
 
             ret = VSgetattr(vsid, _HDF_VDATA, k, buffer);
@@ -785,7 +784,7 @@ test_readattrtwice(void)
                     ret = VSattrinfo(vsid, findex, fattr_index, name, &data_type, &count, &size);
                     CHECK_VOID(ret, FAIL, "VSattrinfo");
 
-                    buffer = malloc(size);
+                    buffer = malloc((size_t)size);
                     CHECK_VOID(buffer, NULL, "malloc");
 
                     ret = VSgetattr(vsid, findex, fattr_index, buffer);

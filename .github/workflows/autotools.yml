@@ -1,15 +1,12 @@
 name: hdf4 dev autools CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
+# Triggers the workflow on a call from another workflow
 on:
   workflow_call:
 
 permissions:
   contents: read
 
-# A workflow run is made up of one or more jobs that can run sequentially or
-# in parallel. We just have one job, but the matrix items defined below will
-# run in parallel.
 jobs:
     call-debug-netcdf-autotools:
       name: "Autotools Debug NetCDF Workflows"
@@ -18,6 +15,7 @@ jobs:
             netcdf: enable
             shared: enable
             build_mode: "debug"
+            build_option: "--disable-production"
 
     call-release-netcdf-autotools:
       name: "Autotools Release NetCDF Workflows"
@@ -26,6 +24,7 @@ jobs:
             netcdf: enable
             shared: enable
             build_mode: "production"
+            build_option: "--enable-production"
 
     call-debug-static-autotools:
       name: "Autotools Debug Static Workflows"
@@ -34,6 +33,7 @@ jobs:
             netcdf: disable
             shared: disable
             build_mode: "debug"
+            build_option: "--disable-production"
 
     call-release-static-autotools:
       name: "Autotools Release Static Workflows"
@@ -42,21 +42,34 @@ jobs:
             netcdf: disable
             shared: disable
             build_mode: "production"
+            build_option: "--enable-production"
 
     call-release-auto-intel:
       name: "Autotools Intel Workflows"
       uses: ./.github/workflows/intel-auto.yml
       with:
             build_mode: "production"
+            build_option: "--enable-production"
 
     call-release-auto-nvhpc:
       name: "Autotools nvhpc Workflows"
       uses: ./.github/workflows/nvhpc-auto.yml
       with:
             build_mode: "production"
+            build_option: "--enable-production"
 
     call-release-auto-aocc:
       name: "Autotools aocc Workflows"
       uses: ./.github/workflows/aocc-auto.yml
       with:
             build_mode: "production"
+            build_option: "--enable-production"
+
+# Problem with jpeg library
+#    call-release-auto-cygwin:
+#      name: "Autotools Cygwin Workflows"
+#      uses: ./.github/workflows/cygwin-auto.yml
+#      with:
+#            build_mode: "production"
+#            build_option: "--enable-production"
+

@@ -88,7 +88,7 @@ get_srcdir(void)
         Returns SUCCEED if the source path is generated successfully,
         or FAIL, otherwise.
 *********************************************************************/
-intn
+int
 make_sourcepath(char *src_path, unsigned int size)
 {
     char *srcdir  = getenv("srcdir");
@@ -130,18 +130,18 @@ make_sourcepath(char *src_path, unsigned int size)
 
 *********************************************************************/
 int32
-make_SDS(int32 sd_id, char *sds_name, int32 type, int32 rank, int32 *dim_sizes, int32 unlim_dim,
+make_SDS(int32 sd_id, const char *sds_name, int32 type, int32 rank, int32 *dim_sizes, int32 unlim_dim,
          void *written_data)
 {
     int32  sds_id;
     int32 *start, *edges;
     int32  sds_size = 0, count = 0;
-    intn   status, ii;
-    intn   num_errs = 0; /* number of errors in compression test so far */
+    int    status, ii;
+    int    num_errs = 0; /* number of errors in compression test so far */
 
-    start = (int32 *)malloc(sizeof(int32) * rank);
+    start = (int32 *)malloc(sizeof(int32) * (size_t)rank);
     CHECK_ALLOC(start, "start", "make_SDS");
-    edges = (int32 *)malloc(sizeof(int32) * rank);
+    edges = (int32 *)malloc(sizeof(int32) * (size_t)rank);
     CHECK_ALLOC(edges, "edges", "make_SDS");
 
     /* Create the array with the name defined in SDS_NAME */
@@ -204,12 +204,12 @@ make_Ext3D_SDS(int32 sd_id, char *sds_name, int32 type, int32 rank, int32 *dim_s
     int32  sds_id;
     int32 *start, *edges;
     int32  sds_size = 0, count;
-    intn   status   = 0, ii;
-    intn   num_errs = 0; /* number of errors in compression test so far */
+    int    status   = 0, ii;
+    int    num_errs = 0; /* number of errors in compression test so far */
 
-    start = (int32 *)malloc(sizeof(int32) * rank);
+    start = (int32 *)malloc(sizeof(int32) * (size_t)rank);
     CHECK_ALLOC(start, "start", "make_Ext3D_SDS");
-    edges = (int32 *)malloc(sizeof(int32) * rank);
+    edges = (int32 *)malloc(sizeof(int32) * (size_t)rank);
     CHECK_ALLOC(edges, "edges", "make_Ext3D_SDS");
 
     /* Set the parameters start and edges to write */
@@ -262,7 +262,7 @@ int32
 get_SDSbyName(int32 sd_id, const char *sds_name)
 {
     int32 sds_id, sds_index;
-    intn  num_errs = 0; /* number of errors in compression test so far */
+    int   num_errs = 0; /* number of errors in compression test so far */
 
     sds_index = SDnametoindex(sd_id, sds_name);
     CHECK(sds_index, FAIL, "SDnametoindex");
@@ -294,8 +294,8 @@ append_Data2SDS(int32 sd_id, char *sds_name, int32 *start, int32 *edges, void *a
     int32 sds_size, ntype;
     int32 comp_size = 0, uncomp_size = 0;
     char  name[80];
-    intn  status   = 0;
-    intn  num_errs = 0; /* number of errors in compression test so far */
+    int   status   = 0;
+    int   num_errs = 0; /* number of errors in compression test so far */
 
     /* Find and select the data set */
     sds_id = get_SDSbyName(sd_id, sds_name);
@@ -336,13 +336,13 @@ append_Data2SDS(int32 sd_id, char *sds_name, int32 *start, int32 *edges, void *a
         SUCCEED or FAIL
 
 *********************************************************************/
-intn
+int
 verify_datasize(int32 sds_id, int32 data_size, char *sds_name)
 {
     int32 comp_size = 0, uncomp_size = 0;
     char  msg[80];
-    intn  status   = 0;
-    intn  num_errs = 0; /* number of errors in compression test so far */
+    int   status   = 0;
+    int   num_errs = 0; /* number of errors in compression test so far */
 
     /* Get the size of data set's data */
     status = SDgetdatasize(sds_id, &comp_size, &uncomp_size);

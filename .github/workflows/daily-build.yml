@@ -1,6 +1,6 @@
 name: hdf4 dev daily build
 
-# Controls when the action will run. Triggers the workflow on a schedule
+# Triggers the workflow on a schedule or on demand
 on:
   workflow_dispatch:
   schedule:
@@ -9,8 +9,6 @@ on:
 permissions:
   contents: read
 
-# A workflow run is made up of one or more jobs that can run sequentially or
-# in parallel.
 jobs:
   get-old-names:
     runs-on: ubuntu-latest
@@ -18,7 +16,7 @@ jobs:
       hdf4-name: ${{ steps.gethdf4base.outputs.HDF4_NAME_BASE }}
 
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@v4.1.7
 
     - name: Get hdf4 release base name
       uses: dsaltares/fetch-gh-release-asset@master
@@ -35,32 +33,38 @@ jobs:
   call-workflow-tarball:
     uses: ./.github/workflows/tarball.yml
     with:
-      #use_tag: snapshot
+      use_tag: snapshot
       use_environ: snapshots
 
   call-workflow-ctest:
     needs: call-workflow-tarball
     uses: ./.github/workflows/cmake-ctest.yml
     with:
-      file_base: ${{ needs.call-workflow-tarball.outputs.file_base }}
       preset_name: ci-StdShar
-      #use_tag: snapshot
-      #use_environ: snapshots
+      file_base: ${{ needs.call-workflow-tarball.outputs.file_base }}
+#      use_tag: snapshot
+      use_environ: snapshots
+    secrets:
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_ENDPOINT: ${{ secrets.AZURE_ENDPOINT }}
+        AZURE_CODE_SIGNING_NAME: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
+        AZURE_CERT_PROFILE_NAME: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
     if: ${{ needs.call-workflow-tarball.outputs.has_changes == 'true' }}
 
-#  call-workflow-abi:
-#    needs: [call-workflow-tarball, call-workflow-ctest]
-#    uses: ./.github/workflows/abi-report.yml
-#    with:
-#      file_ref: '4_3_0-1'
-#      file_base: ${{ needs.call-workflow-tarball.outputs.file_base }}
-#      use_tag: snapshot
-#      use_environ: snapshots
-#    if: ${{ needs.call-workflow-tarball.outputs.has_changes == 'true' }}
+  call-workflow-abi:
+    needs: [call-workflow-tarball, call-workflow-ctest]
+    uses: ./.github/workflows/abi-report.yml
+    with:
+      file_ref: '4.3.0'
+      file_base: ${{ needs.call-workflow-tarball.outputs.file_base }}
+      use_tag: snapshot
+      use_environ: snapshots
+    if: ${{ needs.call-workflow-tarball.outputs.has_changes == 'true' }}
 
   call-workflow-release:
-#    needs: [call-workflow-tarball, call-workflow-ctest, call-workflow-abi]
-    needs: [call-workflow-tarball, call-workflow-ctest]
+    needs: [call-workflow-tarball, call-workflow-ctest, call-workflow-abi]
     permissions:
       contents: write # In order to allow tag creation
     uses: ./.github/workflows/release-files.yml
@@ -73,8 +77,7 @@ jobs:
     if: ${{ needs.call-workflow-tarball.outputs.has_changes == 'true' }}
 
   call-workflow-remove:
-#    needs: [get-old-names, call-workflow-tarball, call-workflow-ctest, call-workflow-abi, call-workflow-release]
-    needs: [get-old-names, call-workflow-tarball, call-workflow-ctest, call-workflow-release]
+    needs: [get-old-names, call-workflow-tarball, call-workflow-ctest, call-workflow-abi, call-workflow-release]
     permissions:
       contents: write # In order to allow file deletion
     uses: ./.github/workflows/remove-files.yml

@@ -51,9 +51,9 @@ EXPORTED ROUTINES
 /* extinfo_t -- external elt information structure */
 
 typedef struct {
-    intn attached;            /* number of access records attached
-                                 to this information structure */
-    intn      modified;       /* has the buffered element been modified? */
+    int attached;             /* number of access records attached
+                                  to this information structure */
+    int       modified;       /* has the buffered element been modified? */
     int32     length;         /* length of this element */
     uint8    *buf;            /* pointer to the buffered data */
     int32     buf_aid;        /* AID for buffered access record (below) */
@@ -74,7 +74,7 @@ funclist_t buf_funcs = {
 NAME
    HBconvert -- cause an existing AID to be buffered.
 USAGE
-   intn HBcreate(aid)
+   int HBcreate(aid)
        int32  aid;          IN: AID of data element to buffer
 RETURNS
    SUCCEED/FAIL
@@ -92,7 +92,7 @@ FORTRAN
    None
 
 --------------------------------------------------------------------------*/
-intn
+int
 HBconvert(int32 aid)
 {
     accrec_t  *access_rec = NULL;  /* access element record */
@@ -102,7 +102,7 @@ HBconvert(int32 aid)
     uint16     data_tag, data_ref; /* tag/ref of the data we are checking */
     int32      data_off;           /* offset of the data we are checking */
     int32      data_len;           /* length of the data we are checking */
-    intn       ret_value = SUCCEED;
+    int        ret_value = SUCCEED;
 
     HEclear();
     if ((access_rec = HAatom_object(aid)) == NULL) /* get the access_rec pointer */
@@ -303,7 +303,7 @@ HBPread(accrec_t *access_rec, int32 length, void *data)
         HGOTO_ERROR(DFE_RANGE, FAIL);
 
     /* Copy data from buffer */
-    memcpy(data, info->buf + access_rec->posn, length);
+    memcpy(data, info->buf + access_rec->posn, (size_t)length);
 
     /* adjust access position */
     access_rec->posn += length;
@@ -366,7 +366,7 @@ HBPwrite(accrec_t *access_rec, int32 length, const void *data)
     } /* end if */
 
     /* Copy data to buffer */
-    memcpy(info->buf + access_rec->posn, data, length);
+    memcpy(info->buf + access_rec->posn, data, (size_t)length);
 
     /* Mark the buffer as modified */
     info->modified = TRUE;
@@ -444,7 +444,7 @@ done:
 NAME
    HBPendacess -- flush buffer, free AID
 USAGE
-   intn HBPendaccess(access_rec)
+   int HBPendaccess(access_rec)
        access_t * access_rec;      IN:  access record to close
 RETURNS
    SUCCEED / FAIL
@@ -452,10 +452,10 @@ DESCRIPTION
    Flush the buffer (if modified) and free the AID
 
 ---------------------------------------------------------------------------*/
-intn
+int
 HBPendaccess(accrec_t *access_rec)
 {
-    intn ret_value = SUCCEED;
+    int ret_value = SUCCEED;
 
     /* validate argument */
     if (access_rec == NULL)

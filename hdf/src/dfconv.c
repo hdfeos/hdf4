@@ -197,7 +197,7 @@ DFKNTsize(int32 number_type)
  * DFKsetNT()
  *   Set the number type for future conversion calls
  ************************************************************/
-intn
+int
 DFKsetNT(int32 ntype)
 {
     HEclear();
@@ -400,7 +400,7 @@ DFconvert(uint8 *source, uint8 *dest, int ntype, int sourcetype, int desttype, i
     }
 
     if (sourcetype == desttype) {
-        memcpy(dest, source, size);
+        memcpy(dest, source, (size_t)size);
         return 0;
     }
 

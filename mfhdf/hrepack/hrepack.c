@@ -35,10 +35,6 @@ int list_main(const char *infname, const char *outfname, options_t *options);
  *
  * Return: FAIL, SUCCEED
  *
- * Programmer: Pedro Vicente, pvn@ncsa.uiuc.edu
- *
- * Date: July 10, 2003
- *
  *-------------------------------------------------------------------------
  */
 int
@@ -75,13 +71,8 @@ hrepack_main(const char *infile, const char *outfile, options_t *options)
  *
  * Return: FAIL, SUCCEED
  *
- * Programmer: Pedro Vicente, pvn@ncsa.uiuc.edu
- *
- * Date: July 23, 2003
- *
  *-------------------------------------------------------------------------
  */
-
 int
 hrepack_addcomp(const char *str, options_t *options)
 {
@@ -103,7 +94,7 @@ hrepack_addcomp(const char *str, options_t *options)
     if ((obj_list = parse_comp(str, &n_objs, &comp)) == NULL)
         return FAIL;
 
-    /* searh for the "*" all objects character */
+    /* search for the "*" all objects character */
     for (i = 0; i < n_objs; i++) {
         if (strcmp("*", obj_list[i].obj) == 0) {
             /* if we are compressing all set the global comp type */
@@ -139,13 +130,8 @@ out:
  *
  * Return: FAIL, SUCCEED
  *
- * Programmer: Pedro Vicente, pvn@ncsa.uiuc.edu
- *
- * Date: July 23, 2003
- *
  *-------------------------------------------------------------------------
  */
-
 int
 hrepack_addchunk(const char *str, options_t *options)
 {
@@ -165,7 +151,7 @@ hrepack_addchunk(const char *str, options_t *options)
     if ((obj_list = parse_chunk(str, &n_objs, chunk_lengths, &chunk_rank)) == NULL)
         return FAIL;
 
-    /* searh for the "*" all objects character */
+    /* search for the "*" all objects character */
     for (i = 0; i < n_objs; i++) {
         if (strcmp("*", obj_list[i].obj) == 0) {
             /* if we are chunking all set the global chunking type */
@@ -202,7 +188,6 @@ out:
  *
  *-------------------------------------------------------------------------
  */
-
 void
 hrepack_init(options_t *options, int verbose)
 {
@@ -219,7 +204,6 @@ hrepack_init(options_t *options, int verbose)
  *
  *-------------------------------------------------------------------------
  */
-
 void
 hrepack_end(options_t *options)
 {
@@ -232,10 +216,6 @@ hrepack_end(options_t *options)
  * Purpose: print and check options
  *
  * Return: FAIL, SUCCEED
- *
- * Programmer: Pedro Vicente, pvn@ncsa.uiuc.edu
- *
- * Date: July 25, 2003
  *
  *-------------------------------------------------------------------------
  */
@@ -334,13 +314,8 @@ print_options(options_t *options)
  *
  * Return: FAIL, SUCCEED
  *
- * Programmer: Pedro Vicente, pvn@ncsa.uiuc.edu
- *
- * Date: July 30, 2003
- *
  *-------------------------------------------------------------------------
  */
-
 int
 read_info(const char *filename, options_t *options)
 {
