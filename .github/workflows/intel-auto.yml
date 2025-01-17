@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install autoconf automake libtool libtool-bin libaec-dev
+          sudo apt-get install autoconf automake libtool libtool-bin libaec-dev libjpeg-dev
 
       - name: Install oneAPI (Linux)
         uses: fortran-lang/setup-fortran@v1
@@ -49,7 +49,6 @@ jobs:
           cd "${{ runner.workspace }}/build"
           $GITHUB_WORKSPACE/configure \
             ${{ inputs.build_option }} \
-            --enable-netcdf \
             --enable-shared \
             --disable-fortran
 

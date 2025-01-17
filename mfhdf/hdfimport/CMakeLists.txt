@@ -48,3 +48,4 @@ install (
         ${HDF4_EXPORTED_TARGETS}
     RUNTIME DESTINATION ${HDF4_INSTALL_TOOLS_BIN_DIR} COMPONENT toolsapplications
 )
+

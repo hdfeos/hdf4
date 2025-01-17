@@ -378,7 +378,7 @@ test_vdatavgroups()
     CHECK_ALLOC(refarray, "refarray", "test_vdatavgroups");
 
     /* Now, get the user-created vgroup refs */
-    status = Vgetvgroups(fid, 0, num_vgroups, refarray);
+    status = Vgetvgroups(fid, 0, (unsigned)num_vgroups, refarray);
     CHECK(status, FAIL, "Vgetvgroups");
     VERIFY(status, num_vgroups, "Vgetvgroups");
 
@@ -418,7 +418,7 @@ test_vdatavgroups()
     CHECK_ALLOC(refarray, "refarray", "test_vdatavgroups");
 
     /* Now, get the user-created vdata refs */
-    status = VSgetvdatas(fid, 0, num_vdatas, refarray);
+    status = VSgetvdatas(fid, 0, (unsigned)num_vdatas, refarray);
     CHECK(num_vdatas, FAIL, "VSgetvdatas");
     VERIFY(status, num_vdatas, "VSgetvdatas");
 
@@ -468,7 +468,7 @@ test_vgisinternal()
     int32 vref        = -1;
     int   ii, status;
     char  internal_array1[20] = {TRUE, TRUE, TRUE, TRUE, TRUE,  TRUE,  TRUE, TRUE,
-                                TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE};
+                                 TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE};
     char  internal_array2[9]  = {TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE};
     int   num_errs            = 0; /* number of errors so far */
 

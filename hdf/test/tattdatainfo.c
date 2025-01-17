@@ -413,7 +413,7 @@ test_vgmixedattrs()
         char        cvalues[20];
         int32       ivalues[10];
         const char *check_attr_names[5]  = {"Attribute 6", "Attribute 7", "Attribute 1", "Attribute 2",
-                                           "Attribute 5"};
+                                            "Attribute 5"};
         const char *check_attr_values[5] = {"VG0 oldattr0", "VG0 oldattr1",
                                             "",        /* int values, added by test_vvsattrs with attr1 */
                                             "Vgroup0", /* added by test_vvsattrs with attr2 */
@@ -448,7 +448,7 @@ test_vgmixedattrs()
                 /* Get and verify values of an int attribute */
                 status = Vgetattr2(vgroup_id, ii, (void *)ivalues);
                 for (jj = 0; jj < acount; jj++)
-                    VERIFY_VOID(ivalues[jj], attr1[jj], "Vgetattr2 int");
+                    VERIFY_VOID(ivalues[jj], (int32)attr1[jj], "Vgetattr2 int");
                 break;
             default:
                 fprintf(stderr, "type %d is not handled!\n", atype);
@@ -541,7 +541,8 @@ test_grattrs()
     /* Fill the image data buffer with values. */
     for (ii = 0; ii < Y_LENGTH; ii++) {
         for (jj = 0; jj < X_LENGTH; jj++) {
-            image_buf[ii][jj][0] = (ii + jj) + 1; /* first component */
+            /* X_LENGTH * Y_LENGTH = 50, so int8 cast is okay */
+            image_buf[ii][jj][0] = (int8)(ii + jj) + 1; /* first component */
         }
     }
 

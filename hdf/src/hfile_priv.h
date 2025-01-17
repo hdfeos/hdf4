@@ -64,11 +64,11 @@
 /* using C buffered file I/O routines to access files */
 #include <stdio.h>
 typedef FILE *hdf_file_t;
-#define HI_OPEN(p, a)     (((a)&DFACC_WRITE) ? fopen((p), "rb+") : fopen((p), "rb"))
+#define HI_OPEN(p, a)     (((a) & DFACC_WRITE) ? fopen((p), "rb+") : fopen((p), "rb"))
 #define HI_CREATE(p)      (fopen((p), "wb+"))
 #define HI_READ(f, b, n)  (((size_t)(n) == (size_t)fread((b), 1, (size_t)(n), (f))) ? SUCCEED : FAIL)
 #define HI_WRITE(f, b, n) (((size_t)(n) == (size_t)fwrite((b), 1, (size_t)(n), (f))) ? SUCCEED : FAIL)
-#define HI_CLOSE(f)       (((f = ((fclose(f) == 0) ? NULL : f)) == NULL) ? SUCCEED : FAIL)
+#define HI_CLOSE(f)       hi_close_stdio(&f)
 #define HI_FLUSH(f)       (fflush(f) == 0 ? SUCCEED : FAIL)
 #define HI_SEEK(f, o)     (fseek((f), (long)(o), SEEK_SET) == 0 ? SUCCEED : FAIL)
 #define HI_SEEK_CUR(f, o) (fseek((f), (long)(o), SEEK_CUR) == 0 ? SUCCEED : FAIL)
@@ -80,7 +80,7 @@ typedef FILE *hdf_file_t;
 #if (FILELIB == UNIXUNBUFIO)
 /* using UNIX unbuffered file I/O routines to access files */
 typedef int hdf_file_t;
-#define HI_OPEN(p, a)     (((a)&DFACC_WRITE) ? open((p), O_RDWR) : open((p), O_RDONLY))
+#define HI_OPEN(p, a)     (((a) & DFACC_WRITE) ? open((p), O_RDWR) : open((p), O_RDONLY))
 #define HI_CREATE(p)      (open((p), O_RDWR | O_CREAT | O_TRUNC, 0666))
 #define HI_CLOSE(f)       (((f = ((close(f) == 0) ? -1 : f)) == -1) ? SUCCEED : FAIL)
 #define HI_FLUSH(f)       (SUCCEED)
@@ -383,11 +383,11 @@ typedef struct functab_t {
 #define MKSPECIALTAG(t) (HDmake_special_tag(t))
 #else
 /* This macro converts a (potentially) special tag into a normal tag */
-#define BASETAG(t)      (uint16)((~(t)&0x8000) ? ((t) & ~0x4000) : (t))
+#define BASETAG(t)      (uint16)((~(t) & 0x8000) ? ((t) & ~0x4000) : (t))
 /* This macro checks if a tag is special */
-#define SPECIALTAG(t)   (uint16)((~(t)&0x8000) && ((t)&0x4000))
+#define SPECIALTAG(t)   (uint16)((~(t) & 0x8000) && ((t) & 0x4000))
 /* This macro (potentially) converts a regular tag into a special tag */
-#define MKSPECIALTAG(t) (uint16)((~(t)&0x8000) ? ((t) | 0x4000) : DFTAG_NULL)
+#define MKSPECIALTAG(t) (uint16)((~(t) & 0x8000) ? ((t) | 0x4000) : DFTAG_NULL)
 #endif /*SPECIAL_TABLE */
 
 /* -------------------------- H-Layer Prototypes -------------------------- */
@@ -400,6 +400,10 @@ typedef struct functab_t {
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if (FILELIB == UNIXBUFIO)
+HDFLIBAPI int hi_close_stdio(FILE **f);
 #endif
 
 #ifdef DISKBLOCK_DEBUG
